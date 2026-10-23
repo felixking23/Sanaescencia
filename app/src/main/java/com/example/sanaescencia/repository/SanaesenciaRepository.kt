@@ -7,12 +7,13 @@ import kotlinx.coroutines.flow.asStateFlow
 
 object SanaesenciaRepository {
 
-    // --- Credenciales de Demostración para Inicio de Sesión ---
+    // --- Credenciales de Demostración y Usuarios del Sistema ---
     val demoUsers = listOf(
         AuthUser(
             email = "paciente@sanaescencia.cl",
             passwordHash = "123456",
             name = "María González",
+            rut = "18.452.193-K",
             role = RoleType.PACIENTE,
             detail = "Cliente / Paciente Activo"
         ),
@@ -20,10 +21,18 @@ object SanaesenciaRepository {
             email = "admin@sanaescencia.cl",
             passwordHash = "123456",
             name = "Administración Los Vilos",
+            rut = "15.820.491-3",
             role = RoleType.ADMINISTRACION,
             detail = "Gestión del Catálogo de Productos y 8 Boxes"
         )
     )
+
+    private val _users = MutableStateFlow(demoUsers)
+    val users: StateFlow<List<AuthUser>> = _users.asStateFlow()
+
+    fun addUser(user: AuthUser) {
+        _users.value = _users.value + user
+    }
 
     // Catálogo de Especialidades Terapéuticas Reales
     val specialties = listOf(

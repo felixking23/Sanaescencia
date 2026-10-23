@@ -9,14 +9,15 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class SanaesenciaViewModel : ViewModel() {
 
-    // Usuario Actualmente Autenticado
-    private val _currentUser = MutableStateFlow<AuthUser?>(SanaesenciaRepository.demoUsers[0])
+    // Usuario Actualmente Autenticado (null por defecto para mostrar Login al iniciar)
+    private val _currentUser = MutableStateFlow<AuthUser?>(null)
     val currentUser: StateFlow<AuthUser?> = _currentUser.asStateFlow()
 
     private val _loginError = MutableStateFlow<String?>(null)
     val loginError: StateFlow<String?> = _loginError.asStateFlow()
 
     // Datos del Repositorio
+    val users: StateFlow<List<AuthUser>> = SanaesenciaRepository.users
     val appointments: StateFlow<List<Appointment>> = SanaesenciaRepository.appointments
     val boxes: StateFlow<List<BoxStatus>> = SanaesenciaRepository.boxes
     val patientContinuityList: StateFlow<List<PatientContinuity>> = SanaesenciaRepository.patientContinuityList
@@ -24,7 +25,7 @@ class SanaesenciaViewModel : ViewModel() {
 
     // Inicio de Sesión por Credenciales
     fun login(emailInput: String, passwordInput: String): Boolean {
-        val user = SanaesenciaRepository.demoUsers.find {
+        val user = SanaesenciaRepository.users.value.find {
             it.email.equals(emailInput.trim(), ignoreCase = true) && it.passwordHash == passwordInput.trim()
         }
         return if (user != null) {
@@ -32,9 +33,33 @@ class SanaesenciaViewModel : ViewModel() {
             _loginError.value = null
             true
         } else {
-            _loginError.value = "Credenciales incorrectas. Prueba con los accesos directos de demo."
+            _loginError.value = "Credenciales incorrectas. Prueba con los accesos directos de demo o crea una cuenta."
             false
         }
+    }
+
+    // Registro de Nuevo Cliente
+    fun registerPatient(name: String, rut: String, email: String, phone: String, passwordInput: String): Boolean {
+        val existingUser = SanaesenciaRepository.users.value.find {
+            it.email.equals(email.trim(), ignoreCase = true)
+        }
+        if (existingUser != null) {
+            _loginError.value = "Ya existe una cuenta con este correo electrónico."
+            return false
+        }
+
+        val newUser = AuthUser(
+            email = email.trim(),
+            passwordHash = passwordInput.trim(),
+            name = name.trim(),
+            rut = rut.trim(),
+            role = RoleType.PACIENTE,
+            detail = if (phone.isNotBlank()) "Cliente Registrado (RUT: $rut · Tel: $phone)" else "Cliente Registrado (RUT: $rut)"
+        )
+        SanaesenciaRepository.addUser(newUser)
+        _currentUser.value = newUser
+        _loginError.value = null
+        return true
     }
 
     // Acceso Rápido por Rol

@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
 enum class NavTarget(val title: String, val icon: ImageVector) {
     INICIO("Inicio", Icons.Default.Home),
     CATALOGO("Catálogo", Icons.Default.Storefront),
+    USUARIOS("Usuarios", Icons.Default.Group),
     PERFIL("Perfil", Icons.Default.Person)
 }
 
@@ -42,24 +43,45 @@ enum class NavTarget(val title: String, val icon: ImageVector) {
 fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
     val currentUser by viewModel.currentUser.collectAsState()
     val loginError by viewModel.loginError.collectAsState()
+    val users by viewModel.users.collectAsState()
 
     var currentScreen by remember { mutableStateOf(NavTarget.INICIO) }
 
     if (currentUser == null) {
-        // Pantalla de Inicio de Sesión
-        LoginScreen(
-            onLoginClick = { email, password ->
-                viewModel.login(email, password)
-            },
-            onQuickLogin = { role ->
-                viewModel.quickLogin(role)
-                currentScreen = when (role) {
-                    RoleType.PACIENTE -> NavTarget.INICIO
-                    RoleType.ADMINISTRACION -> NavTarget.PERFIL
+        var isRegistering by remember { mutableStateOf(false) }
+
+        if (isRegistering) {
+            RegisterScreen(
+                onRegisterClick = { name, rut, email, phone, password ->
+                    val success = viewModel.registerPatient(name, rut, email, phone, password)
+                    if (success) {
+                        currentScreen = NavTarget.INICIO
+                    }
+                    success
+                },
+                onBackToLogin = {
+                    isRegistering = false
                 }
-            },
-            errorMessage = loginError
-        )
+            )
+        } else {
+            // Pantalla de Inicio de Sesión
+            LoginScreen(
+                onLoginClick = { email, password ->
+                    viewModel.login(email, password)
+                },
+                onQuickLogin = { role ->
+                    viewModel.quickLogin(role)
+                    currentScreen = when (role) {
+                        RoleType.PACIENTE -> NavTarget.INICIO
+                        RoleType.ADMINISTRACION -> NavTarget.PERFIL
+                    }
+                },
+                onNavigateToRegister = {
+                    isRegistering = true
+                },
+                errorMessage = loginError
+            )
+        }
     } else {
         // App Principal con Barra de Navegación y Header
         Scaffold(
@@ -83,7 +105,7 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                     val userRole = currentUser?.role ?: RoleType.PACIENTE
                     val availableTabs = when (userRole) {
                         RoleType.PACIENTE -> listOf(NavTarget.INICIO, NavTarget.CATALOGO, NavTarget.PERFIL)
-                        RoleType.ADMINISTRACION -> listOf(NavTarget.PERFIL)
+                        RoleType.ADMINISTRACION -> listOf(NavTarget.INICIO, NavTarget.CATALOGO, NavTarget.USUARIOS, NavTarget.PERFIL)
                     }
 
                     availableTabs.forEach { tab ->
@@ -109,6 +131,10 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                     )
 
                     NavTarget.CATALOGO -> CatalogScreen()
+
+                    NavTarget.USUARIOS -> UsersManagementScreen(
+                        users = users
+                    )
 
                     NavTarget.PERFIL -> ProfileScreen(
                         currentUser = currentUser,

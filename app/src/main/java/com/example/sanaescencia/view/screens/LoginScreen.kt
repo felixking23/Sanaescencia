@@ -27,6 +27,7 @@ import com.example.sanaescencia.model.RoleType
 fun LoginScreen(
     onLoginClick: (String, String) -> Boolean,
     onQuickLogin: (RoleType) -> Unit,
+    onNavigateToRegister: () -> Unit,
     errorMessage: String?
 ) {
     var email by remember { mutableStateOf("") }
@@ -146,7 +147,34 @@ fun LoginScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Bloque de Registro para Clientes
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "¿Aún no tienes una cuenta?",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.DarkGray
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            TextButton(
+                onClick = onNavigateToRegister,
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Text(
+                    text = "Crear una cuenta",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Tarjeta de Perfiles de Prueba / Demo Acceso Rápido
         Card(

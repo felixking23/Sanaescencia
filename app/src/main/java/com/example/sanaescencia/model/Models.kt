@@ -9,6 +9,7 @@ data class AuthUser(
     val email: String,
     val passwordHash: String = "123456",
     val name: String,
+    val rut: String = "",
     val role: RoleType,
     val detail: String
 )
