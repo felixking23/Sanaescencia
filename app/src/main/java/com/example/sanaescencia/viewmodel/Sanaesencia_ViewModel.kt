@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class SanaesenciaViewModel : ViewModel() {
+class Sanaesencia_ViewModel : ViewModel() {
 
     // Usuario Actualmente Autenticado
     private val _currentUser = MutableStateFlow<AuthUser?>(SanaesenciaRepository.demoUsers[0])
