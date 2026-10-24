@@ -18,7 +18,8 @@ import com.example.sanaescencia.view.components.GpsLocationCard
 @Composable
 fun HomeScreen(
     currentUser: AuthUser?,
-    onNavigateToCatalog: () -> Unit
+    onNavigateToCatalog: () -> Unit,
+    onNavigateCarritoCli: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -64,5 +65,18 @@ fun HomeScreen(
             Spacer(modifier = Modifier.width(8.dp))
             Text("Explorar Catálogo de Productos Naturales", fontWeight = FontWeight.Bold)
         }
+        Spacer(modifier = Modifier.height(12.dp))
+        Button(
+            onClick = onNavigateCarritoCli,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Icon(Icons.Default.AddShoppingCart, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Carrito de compras", fontWeight = FontWeight.Bold)
+        }
+
     }
 }

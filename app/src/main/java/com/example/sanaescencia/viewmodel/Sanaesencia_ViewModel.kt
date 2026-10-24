@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class Sanaesencia_ViewModel : ViewModel() {
+class SanaesenciaViewModel : ViewModel() {
 
     // Usuario Actualmente Autenticado
     private val _currentUser = MutableStateFlow<AuthUser?>(SanaesenciaRepository.demoUsers[0])
@@ -21,6 +21,8 @@ class Sanaesencia_ViewModel : ViewModel() {
     val boxes: StateFlow<List<BoxStatus>> = SanaesenciaRepository.boxes
     val patientContinuityList: StateFlow<List<PatientContinuity>> = SanaesenciaRepository.patientContinuityList
     val predictiveAlerts: StateFlow<List<PredictiveAlert>> = SanaesenciaRepository.predictiveAlerts
+
+
 
     // Inicio de Sesión por Credenciales
     fun login(emailInput: String, passwordInput: String): Boolean {
@@ -86,4 +88,10 @@ class Sanaesencia_ViewModel : ViewModel() {
     fun dismissAlert(alertId: String) {
         SanaesenciaRepository.dismissAlert(alertId)
     }
+
+    //efe
+
+
+
+
 }

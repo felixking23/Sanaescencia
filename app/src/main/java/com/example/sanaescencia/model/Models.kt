@@ -13,6 +13,8 @@ data class AuthUser(
     val detail: String
 )
 
+
+
 data class Specialty(
     val id: String,
     val name: String,
@@ -99,3 +101,6 @@ data class PredictiveAlert(
     val alertType: AlertType,
     val isDismissed: Boolean = false
 )
+
+
+

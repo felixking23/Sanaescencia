@@ -35,7 +35,9 @@ class MainActivity : ComponentActivity() {
 enum class NavTarget(val title: String, val icon: ImageVector) {
     INICIO("Inicio", Icons.Default.Home),
     CATALOGO("Catálogo", Icons.Default.Storefront),
-    PERFIL("Perfil", Icons.Default.Person)
+    PERFIL("Perfil", Icons.Default.Person),
+
+    CARRITO("Carrito", Icons.Default.AddShoppingCart)
 }
 
 @Composable
@@ -105,7 +107,8 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                 when (currentScreen) {
                     NavTarget.INICIO -> HomeScreen(
                         currentUser = currentUser,
-                        onNavigateToCatalog = { currentScreen = NavTarget.CATALOGO }
+                        onNavigateToCatalog = { currentScreen = NavTarget.CATALOGO },
+                        onNavigateCarritoCli = { currentScreen = NavTarget.CARRITO}
                     )
 
                     NavTarget.CATALOGO -> CatalogScreen()
@@ -123,6 +126,12 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                             viewModel.logout()
                         }
                     )
+
+                    NavTarget.CARRITO -> CarritoScreen(
+                        currentUser = currentUser,
+                    )
+
+                    else -> {}
                 }
             }
         }
