@@ -1,9 +1,9 @@
 package com.example.sanaescencia.view.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -12,7 +12,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -28,9 +30,11 @@ fun UsersManagementScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedRoleFilter by remember { mutableStateOf<RoleType?>(null) }
+    var selectedUserForDetails by remember { mutableStateOf<AuthUser?>(null) }
 
     val filteredUsers = users.filter { user ->
         val matchesSearch = user.name.contains(searchQuery, ignoreCase = true) ||
+                user.rut.contains(searchQuery, ignoreCase = true) ||
                 user.email.contains(searchQuery, ignoreCase = true) ||
                 user.detail.contains(searchQuery, ignoreCase = true)
         val matchesRole = selectedRoleFilter == null || user.role == selectedRoleFilter
@@ -59,7 +63,7 @@ fun UsersManagementScreen(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Listado completo de clientes y administradores registrados en Sanaesencia",
+                text = "Listado de usuarios registrados en Sanaesencia",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
                 textAlign = TextAlign.Center
@@ -117,7 +121,7 @@ fun UsersManagementScreen(
             value = searchQuery,
             onValueChange = { searchQuery = it },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Buscar por nombre, correo o detalle...") },
+            placeholder = { Text("Buscar por RUT, nombre o correo...") },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             trailingIcon = {
                 if (searchQuery.isNotEmpty()) {
@@ -141,17 +145,17 @@ fun UsersManagementScreen(
             FilterChip(
                 selected = selectedRoleFilter == null,
                 onClick = { selectedRoleFilter = null },
-                label = { Text("Todos (${users.size})") }
+                label = { Text("Todos") }
             )
             FilterChip(
                 selected = selectedRoleFilter == RoleType.PACIENTE,
                 onClick = { selectedRoleFilter = RoleType.PACIENTE },
-                label = { Text("Clientes ($totalPatients)") }
+                label = { Text("Clientes") }
             )
             FilterChip(
                 selected = selectedRoleFilter == RoleType.ADMINISTRACION,
                 onClick = { selectedRoleFilter = RoleType.ADMINISTRACION },
-                label = { Text("Admin ($totalAdmins)") }
+                label = { Text("Admins") }
             )
         }
 
@@ -182,7 +186,7 @@ fun UsersManagementScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Tabla de Usuarios Creados (${filteredUsers.size})",
+                        text = "Tabla de usuarios",
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleMedium
                     )
@@ -205,57 +209,28 @@ fun UsersManagementScreen(
                         )
                     }
                 } else {
-                    // Tabla desplazable horizontalmente para visualización perfecta
-                    val horizontalScrollState = rememberScrollState()
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(horizontalScrollState)
-                    ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
                         // Encabezados de la Tabla
                         Row(
                             modifier = Modifier
+                                .fillMaxWidth()
                                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
                                 .padding(horizontal = 16.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Nombre",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                modifier = Modifier.width(160.dp)
-                            )
-                            Text(
                                 text = "RUT",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
-                                modifier = Modifier.width(130.dp)
+                                modifier = Modifier.weight(1.1f)
                             )
                             Text(
-                                text = "Correo Electrónico",
+                                text = "Nombre",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
-                                modifier = Modifier.width(200.dp)
+                                modifier = Modifier.weight(1.5f)
                             )
-                            Text(
-                                text = "Contraseña",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                modifier = Modifier.width(130.dp)
-                            )
-                            Text(
-                                text = "Rol / Perfil",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                modifier = Modifier.width(140.dp)
-                            )
-                            Text(
-                                text = "Detalle de Cuenta",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                modifier = Modifier.width(220.dp)
-                            )
+                            Spacer(modifier = Modifier.weight(0.8f))
                         }
 
                         HorizontalDivider()
@@ -270,13 +245,25 @@ fun UsersManagementScreen(
 
                             Row(
                                 modifier = Modifier
+                                    .fillMaxWidth()
                                     .background(backgroundColor)
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    .padding(horizontal = 16.dp, vertical = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                // RUT
+                                Text(
+                                    text = if (user.rut.isNotBlank()) user.rut else "Sin RUT",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.weight(1.1f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+
                                 // Nombre
                                 Row(
-                                    modifier = Modifier.width(160.dp),
+                                    modifier = Modifier.weight(1.5f),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
@@ -285,84 +272,36 @@ fun UsersManagementScreen(
                                         tint = if (user.role == RoleType.PACIENTE) Color(0xFF2E7D32) else Color(0xFF512DA8),
                                         modifier = Modifier.size(18.dp)
                                     )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = user.name,
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontSize = 13.sp,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
-
-                                // RUT
-                                Text(
-                                    text = if (user.rut.isNotBlank()) user.rut else "Sin RUT",
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color.DarkGray,
-                                    modifier = Modifier.width(130.dp),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-
-                                // Correo
-                                Text(
-                                    text = user.email,
-                                    fontSize = 13.sp,
-                                    color = Color.DarkGray,
-                                    modifier = Modifier.width(200.dp),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-
-                                // Contraseña
-                                Row(
-                                    modifier = Modifier.width(130.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.VpnKey,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(16.dp)
-                                    )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = user.passwordHash,
+                                        text = user.name,
+                                        fontWeight = FontWeight.Medium,
                                         fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
                                 }
 
-                                // Rol
-                                Box(modifier = Modifier.width(140.dp)) {
-                                    Surface(
-                                        color = if (user.role == RoleType.PACIENTE) Color(0xFFE8F5E9) else Color(0xFFEDE7F6),
-                                        contentColor = if (user.role == RoleType.PACIENTE) Color(0xFF2E7D32) else Color(0xFF512DA8),
-                                        shape = RoundedCornerShape(8.dp)
+                                // Botón 'Ver'
+                                Box(
+                                    modifier = Modifier.weight(0.8f),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    OutlinedButton(
+                                        onClick = { selectedUserForDetails = user },
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.height(32.dp)
                                     ) {
-                                        Text(
-                                            text = if (user.role == RoleType.PACIENTE) "Paciente" else "Administrador",
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                        Icon(
+                                            imageVector = Icons.Default.Visibility,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(14.dp)
                                         )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("Ver", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
-
-                                // Detalle
-                                Text(
-                                    text = user.detail,
-                                    fontSize = 12.sp,
-                                    color = Color.Gray,
-                                    modifier = Modifier.width(220.dp),
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis
-                                )
                             }
 
                             if (index < filteredUsers.size - 1) {
@@ -372,6 +311,152 @@ fun UsersManagementScreen(
                     }
                 }
             }
+        }
+    }
+
+    // Modal / Diálogo para "Ver Datos del Usuario"
+    selectedUserForDetails?.let { user ->
+        AlertDialog(
+            onDismissRequest = { selectedUserForDetails = null },
+            confirmButton = {
+                Button(
+                    onClick = { selectedUserForDetails = null },
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Cerrar")
+                }
+            },
+            title = {
+                Text(
+                    text = "Datos de la Cuenta",
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Foto de Perfil / Avatar
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (user.role == RoleType.PACIENTE) Color(0xFFE8F5E9) else Color(0xFFEDE7F6)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (user.role == RoleType.PACIENTE) Icons.Default.Person else Icons.Default.AdminPanelSettings,
+                            contentDescription = null,
+                            tint = if (user.role == RoleType.PACIENTE) Color(0xFF2E7D32) else Color(0xFF512DA8),
+                            modifier = Modifier.size(46.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Datos ordenados de arriba hacia abajo
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            UserDetailItem(
+                                icon = Icons.Default.Person,
+                                label = "Nombre Completo",
+                                value = user.name
+                            )
+
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                            UserDetailItem(
+                                icon = Icons.Default.Badge,
+                                label = "RUT",
+                                value = if (user.rut.isNotBlank()) user.rut else "Sin RUT registrado"
+                            )
+
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                            UserDetailItem(
+                                icon = Icons.Default.Email,
+                                label = "Correo Electrónico",
+                                value = user.email
+                            )
+
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                            UserDetailItem(
+                                icon = Icons.Default.Phone,
+                                label = "Teléfono / WhatsApp",
+                                value = if (user.phone.isNotBlank()) user.phone else "Sin teléfono registrado"
+                            )
+
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                            UserDetailItem(
+                                icon = Icons.Default.VpnKey,
+                                label = "Contraseña",
+                                value = user.passwordHash
+                            )
+
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                            UserDetailItem(
+                                icon = if (user.role == RoleType.ADMINISTRACION) Icons.Default.AdminPanelSettings else Icons.Default.AccountCircle,
+                                label = "Rol / Perfil",
+                                value = user.role.displayName
+                            )
+
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                            UserDetailItem(
+                                icon = Icons.Default.Info,
+                                label = "Detalle de Cuenta",
+                                value = user.detail
+                            )
+                        }
+                    }
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun UserDetailItem(
+    icon: ImageVector,
+    label: String,
+    value: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Column {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold
+            )
         }
     }
 }

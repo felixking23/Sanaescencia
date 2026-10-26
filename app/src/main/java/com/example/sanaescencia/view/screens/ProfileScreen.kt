@@ -87,25 +87,41 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 ProfileInfoRow(
+                    icon = Icons.Default.Person,
+                    label = "Nombre Completo",
+                    value = currentUser?.name ?: "Usuario"
+                )
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                ProfileInfoRow(
                     icon = Icons.Default.Badge,
-                    label = "Detalle de Usuario",
-                    value = currentUser?.detail ?: "Cliente Activo"
+                    label = "RUT",
+                    value = if (!currentUser?.rut.isNullOrBlank()) currentUser.rut else "Sin RUT registrado"
                 )
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                 ProfileInfoRow(
-                    icon = Icons.Default.LocationOn,
-                    label = "Sede Principal",
-                    value = "Los Vilos · Caupolicán 220"
+                    icon = Icons.Default.Phone,
+                    label = "Teléfono / WhatsApp",
+                    value = if (!currentUser?.phone.isNullOrBlank()) currentUser.phone else "Sin teléfono registrado"
                 )
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                 ProfileInfoRow(
-                    icon = Icons.Default.Notifications,
-                    label = "Notificaciones y Alertas",
-                    value = "Alertas Predictivas Activadas"
+                    icon = Icons.Default.Email,
+                    label = "Correo Electrónico",
+                    value = currentUser?.email ?: "No registrado"
+                )
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                ProfileInfoRow(
+                    icon = Icons.Default.VpnKey,
+                    label = "Contraseña de Acceso",
+                    value = currentUser?.passwordHash ?: "••••••"
                 )
             }
         }

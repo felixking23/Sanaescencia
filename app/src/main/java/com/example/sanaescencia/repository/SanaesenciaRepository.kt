@@ -14,6 +14,7 @@ object SanaesenciaRepository {
             passwordHash = "123456",
             name = "María González",
             rut = "18.452.193-K",
+            phone = "+56 9 8765 4321",
             role = RoleType.PACIENTE,
             detail = "Cliente / Paciente Activo"
         ),
@@ -22,6 +23,7 @@ object SanaesenciaRepository {
             passwordHash = "123456",
             name = "Administración Los Vilos",
             rut = "15.820.491-3",
+            phone = "+56 9 1234 5678",
             role = RoleType.ADMINISTRACION,
             detail = "Gestión del Catálogo de Productos y 8 Boxes"
         )

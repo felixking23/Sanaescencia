@@ -53,8 +53,9 @@ class SanaesenciaViewModel : ViewModel() {
             passwordHash = passwordInput.trim(),
             name = name.trim(),
             rut = rut.trim(),
+            phone = phone.trim(),
             role = RoleType.PACIENTE,
-            detail = if (phone.isNotBlank()) "Cliente Registrado (RUT: $rut · Tel: $phone)" else "Cliente Registrado (RUT: $rut)"
+            detail = "Cliente Registrado"
         )
         SanaesenciaRepository.addUser(newUser)
         _currentUser.value = newUser
