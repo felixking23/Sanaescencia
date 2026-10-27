@@ -26,21 +26,21 @@ fun ProfileScreen(
     currentUser: AuthUser?,
     onSwitchRole: (RoleType) -> Unit,
     onLogout: () -> Unit,
-    onUpdateProfile: (originalEmail: String, name: String, rut: String, email: String, phone: String, password: String, role: RoleType) -> Boolean
+    onUpdateProfile: (originalEmail: String, name: String, rut: String, email: String, phone: String, password: String, role: RoleType) -> Boolean,
+    isEditingProfile: Boolean,
+    onEditingProfileChanged: (Boolean) -> Unit
 ) {
-    var isEditingProfile by remember { mutableStateOf(false) }
-
     if (isEditingProfile && currentUser != null) {
         EditUserAdminScreen(
             user = currentUser,
             onUpdateUser = { origEmail, name, rut, email, phone, password, role ->
                 val success = onUpdateProfile(origEmail, name, rut, email, phone, password, role)
                 if (success) {
-                    isEditingProfile = false
+                    onEditingProfileChanged(false)
                 }
                 success
             },
-            onBack = { isEditingProfile = false }
+            onBack = { onEditingProfileChanged(false) }
         )
     } else {
         Column(
@@ -182,7 +182,7 @@ fun ProfileScreen(
 
             // Botón Editar Perfil
             Button(
-                onClick = { isEditingProfile = true },
+                onClick = { onEditingProfileChanged(true) },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 modifier = Modifier
                     .fillMaxWidth()

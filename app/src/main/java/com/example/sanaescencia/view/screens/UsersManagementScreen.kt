@@ -31,13 +31,19 @@ fun UsersManagementScreen(
     onCreateUser: (name: String, rut: String, email: String, phone: String, password: String, role: RoleType) -> Boolean,
     onUpdateUser: (originalEmail: String, name: String, rut: String, email: String, phone: String, password: String, role: RoleType) -> Boolean,
     isCreatingUser: Boolean,
-    onCreatingUserChanged: (Boolean) -> Unit
+    onCreatingUserChanged: (Boolean) -> Unit,
+    isEditingUser: Boolean,
+    onEditingUserChanged: (Boolean) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedRoleFilter by remember { mutableStateOf<RoleType?>(null) }
     var selectedUserForDetails by remember { mutableStateOf<AuthUser?>(null) }
     var userToDelete by remember { mutableStateOf<AuthUser?>(null) }
     var userToEdit by remember { mutableStateOf<AuthUser?>(null) }
+
+    LaunchedEffect(userToEdit) {
+        onEditingUserChanged(userToEdit != null)
+    }
 
     if (userToEdit != null) {
         EditUserAdminScreen(
@@ -193,15 +199,15 @@ fun UsersManagementScreen(
                                         text = "Nombre",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 13.sp,
-                                        modifier = Modifier.weight(1.0f)
+                                        modifier = Modifier.weight(0.9f)
                                     )
                                     Text(
                                         text = "Rol",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 13.sp,
-                                        modifier = Modifier.weight(0.9f)
+                                        modifier = Modifier.weight(0.6f)
                                     )
-                                    Spacer(modifier = Modifier.weight(1.6f))
+                                    Spacer(modifier = Modifier.weight(1.8f))
                                 }
 
                                 HorizontalDivider()
@@ -226,7 +232,7 @@ fun UsersManagementScreen(
                                             text = user.name,
                                             fontWeight = FontWeight.SemiBold,
                                             fontSize = 13.sp,
-                                            modifier = Modifier.weight(1.0f),
+                                            modifier = Modifier.weight(0.9f),
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
@@ -240,27 +246,31 @@ fun UsersManagementScreen(
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Medium,
                                             color = Color.Black,
-                                            modifier = Modifier.weight(0.9f),
+                                            modifier = Modifier.weight(0.6f),
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
 
-                                        // Botones de Acción ('Ver', 'Editar' y 'Borrar')
+                                        // Botones de Acción ('Borrar', 'Editar' y 'Ver')
                                         Row(
-                                            modifier = Modifier.weight(1.6f),
-                                            horizontalArrangement = Arrangement.Start,
+                                            modifier = Modifier.weight(1.8f),
+                                            horizontalArrangement = Arrangement.End,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            OutlinedButton(
-                                                onClick = { selectedUserForDetails = user },
-                                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
-                                                shape = RoundedCornerShape(8.dp),
-                                                modifier = Modifier.height(30.dp)
-                                            ) {
-                                                Text("Ver", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                            }
+                                            val isMainAdmin = user.email.equals("admin@sanaescencia.cl", ignoreCase = true) || user.name.contains("Admin Jefe", ignoreCase = true)
+                                            if (!isMainAdmin) {
+                                                Button(
+                                                    onClick = { userToDelete = user },
+                                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+                                                    shape = RoundedCornerShape(8.dp),
+                                                    modifier = Modifier.height(30.dp)
+                                                ) {
+                                                    Text("Borrar", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                }
 
-                                            Spacer(modifier = Modifier.width(4.dp))
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                            }
 
                                             Button(
                                                 onClick = { userToEdit = user },
@@ -274,14 +284,13 @@ fun UsersManagementScreen(
 
                                             Spacer(modifier = Modifier.width(4.dp))
 
-                                            Button(
-                                                onClick = { userToDelete = user },
-                                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                            OutlinedButton(
+                                                onClick = { selectedUserForDetails = user },
                                                 contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
                                                 shape = RoundedCornerShape(8.dp),
                                                 modifier = Modifier.height(30.dp)
                                             ) {
-                                                Text("Borrar", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                Text("Ver", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                             }
                                         }
                                     }

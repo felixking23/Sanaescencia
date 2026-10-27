@@ -47,6 +47,8 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
 
     var currentScreen by remember { mutableStateOf(NavTarget.INICIO) }
     var isCreatingUserAdmin by remember { mutableStateOf(false) }
+    var isEditingUserAdmin by remember { mutableStateOf(false) }
+    var isEditingOwnProfile by remember { mutableStateOf(false) }
 
     if (currentUser == null) {
         var isRegistering by remember { mutableStateOf(false) }
@@ -102,7 +104,10 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                 )
             },
             bottomBar = {
-                if (!(currentScreen == NavTarget.USUARIOS && isCreatingUserAdmin)) {
+                val hideBottomBar = (currentScreen == NavTarget.USUARIOS && (isCreatingUserAdmin || isEditingUserAdmin)) ||
+                        (currentScreen == NavTarget.PERFIL && isEditingOwnProfile)
+
+                if (!hideBottomBar) {
                     NavigationBar {
                         val userRole = currentUser?.role ?: RoleType.PACIENTE
                         val availableTabs = when (userRole) {
@@ -117,6 +122,10 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                                     currentScreen = tab
                                     if (tab != NavTarget.USUARIOS) {
                                         isCreatingUserAdmin = false
+                                        isEditingUserAdmin = false
+                                    }
+                                    if (tab != NavTarget.PERFIL) {
+                                        isEditingOwnProfile = false
                                     }
                                 },
                                 icon = { Icon(tab.icon, contentDescription = tab.title) },
@@ -152,24 +161,30 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                             viewModel.updateUser(originalEmail, name, rut, email, phone, password, role)
                         },
                         isCreatingUser = isCreatingUserAdmin,
-                        onCreatingUserChanged = { isCreatingUserAdmin = it }
+                        onCreatingUserChanged = { isCreatingUserAdmin = it },
+                        isEditingUser = isEditingUserAdmin,
+                        onEditingUserChanged = { isEditingUserAdmin = it }
                     )
 
                     NavTarget.PERFIL -> ProfileScreen(
                         currentUser = currentUser,
                         onSwitchRole = { role ->
                             viewModel.switchRole(role)
+                            isEditingOwnProfile = false
                             currentScreen = when (role) {
                                 RoleType.PACIENTE -> NavTarget.INICIO
                                 RoleType.ADMINISTRACION -> NavTarget.PERFIL
                             }
                         },
                         onLogout = {
+                            isEditingOwnProfile = false
                             viewModel.logout()
                         },
                         onUpdateProfile = { originalEmail, name, rut, email, phone, password, role ->
                             viewModel.updateUser(originalEmail, name, rut, email, phone, password, role)
-                        }
+                        },
+                        isEditingProfile = isEditingOwnProfile,
+                        onEditingProfileChanged = { isEditingOwnProfile = it }
                     )
                 }
             }

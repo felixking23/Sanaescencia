@@ -107,7 +107,8 @@ fun RegisterScreen(
                     label = { Text("Nombre") },
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -118,7 +119,8 @@ fun RegisterScreen(
                     label = { Text("Apellido") },
                     leadingIcon = { Icon(Icons.Default.PersonOutline, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -129,7 +131,8 @@ fun RegisterScreen(
                     label = { Text("RUT (ej: 12.345.678-9)") },
                     leadingIcon = { Icon(Icons.Default.Badge, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -140,7 +143,8 @@ fun RegisterScreen(
                     label = { Text("Correo Electrónico") },
                     leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -151,7 +155,8 @@ fun RegisterScreen(
                     label = { Text("Teléfono / WhatsApp") },
                     leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -171,7 +176,8 @@ fun RegisterScreen(
                     },
                     visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -183,7 +189,8 @@ fun RegisterScreen(
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                     visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
                 )
 
                 errorMessage?.let { error ->

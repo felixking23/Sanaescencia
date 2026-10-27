@@ -10,6 +10,15 @@ object SanaesenciaRepository {
     // --- Credenciales de Demostración y Usuarios del Sistema ---
     val demoUsers = listOf(
         AuthUser(
+            email = "admin@sanaescencia.cl",
+            passwordHash = "123456",
+            name = "Admin Jefe",
+            rut = "15.820.491-3",
+            phone = "+56 9 1234 5678",
+            role = RoleType.ADMINISTRACION,
+            detail = "Gestión del Catálogo de Productos y 8 Boxes"
+        ),
+        AuthUser(
             email = "paciente@sanaescencia.cl",
             passwordHash = "123456",
             name = "Felipe Olguin",
@@ -17,15 +26,6 @@ object SanaesenciaRepository {
             phone = "+56 9 8765 4321",
             role = RoleType.PACIENTE,
             detail = "Cliente / Paciente Activo"
-        ),
-        AuthUser(
-            email = "admin@sanaescencia.cl",
-            passwordHash = "123456",
-            name = "Administración",
-            rut = "15.820.491-3",
-            phone = "+56 9 1234 5678",
-            role = RoleType.ADMINISTRACION,
-            detail = "Gestión del Catálogo de Productos y 8 Boxes"
         )
     )
 
