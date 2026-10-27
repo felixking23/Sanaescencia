@@ -46,6 +46,7 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
     val users by viewModel.users.collectAsState()
 
     var currentScreen by remember { mutableStateOf(NavTarget.INICIO) }
+    var isCreatingUserAdmin by remember { mutableStateOf(false) }
 
     if (currentUser == null) {
         var isRegistering by remember { mutableStateOf(false) }
@@ -101,20 +102,27 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                 )
             },
             bottomBar = {
-                NavigationBar {
-                    val userRole = currentUser?.role ?: RoleType.PACIENTE
-                    val availableTabs = when (userRole) {
-                        RoleType.PACIENTE -> listOf(NavTarget.INICIO, NavTarget.CATALOGO, NavTarget.PERFIL)
-                        RoleType.ADMINISTRACION -> listOf(NavTarget.INICIO, NavTarget.CATALOGO, NavTarget.USUARIOS, NavTarget.PERFIL)
-                    }
+                if (!(currentScreen == NavTarget.USUARIOS && isCreatingUserAdmin)) {
+                    NavigationBar {
+                        val userRole = currentUser?.role ?: RoleType.PACIENTE
+                        val availableTabs = when (userRole) {
+                            RoleType.PACIENTE -> listOf(NavTarget.INICIO, NavTarget.CATALOGO, NavTarget.PERFIL)
+                            RoleType.ADMINISTRACION -> listOf(NavTarget.INICIO, NavTarget.CATALOGO, NavTarget.USUARIOS, NavTarget.PERFIL)
+                        }
 
-                    availableTabs.forEach { tab ->
-                        NavigationBarItem(
-                            selected = currentScreen == tab,
-                            onClick = { currentScreen = tab },
-                            icon = { Icon(tab.icon, contentDescription = tab.title) },
-                            label = { Text(tab.title, textAlign = TextAlign.Center) }
-                        )
+                        availableTabs.forEach { tab ->
+                            NavigationBarItem(
+                                selected = currentScreen == tab,
+                                onClick = {
+                                    currentScreen = tab
+                                    if (tab != NavTarget.USUARIOS) {
+                                        isCreatingUserAdmin = false
+                                    }
+                                },
+                                icon = { Icon(tab.icon, contentDescription = tab.title) },
+                                label = { Text(tab.title, textAlign = TextAlign.Center) }
+                            )
+                        }
                     }
                 }
             }
@@ -136,7 +144,15 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                         users = users,
                         onDeleteUser = { user ->
                             viewModel.deleteUser(user)
-                        }
+                        },
+                        onCreateUser = { name, rut, email, phone, password, role ->
+                            viewModel.createUserByAdmin(name, rut, email, phone, password, role)
+                        },
+                        onUpdateUser = { originalEmail, name, rut, email, phone, password, role ->
+                            viewModel.updateUser(originalEmail, name, rut, email, phone, password, role)
+                        },
+                        isCreatingUser = isCreatingUserAdmin,
+                        onCreatingUserChanged = { isCreatingUserAdmin = it }
                     )
 
                     NavTarget.PERFIL -> ProfileScreen(
@@ -150,6 +166,9 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                         },
                         onLogout = {
                             viewModel.logout()
+                        },
+                        onUpdateProfile = { originalEmail, name, rut, email, phone, password, role ->
+                            viewModel.updateUser(originalEmail, name, rut, email, phone, password, role)
                         }
                     )
                 }

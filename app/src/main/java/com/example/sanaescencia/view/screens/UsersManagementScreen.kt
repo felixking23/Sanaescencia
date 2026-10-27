@@ -27,236 +27,289 @@ import com.example.sanaescencia.model.RoleType
 @Composable
 fun UsersManagementScreen(
     users: List<AuthUser>,
-    onDeleteUser: (AuthUser) -> Unit
+    onDeleteUser: (AuthUser) -> Unit,
+    onCreateUser: (name: String, rut: String, email: String, phone: String, password: String, role: RoleType) -> Boolean,
+    onUpdateUser: (originalEmail: String, name: String, rut: String, email: String, phone: String, password: String, role: RoleType) -> Boolean,
+    isCreatingUser: Boolean,
+    onCreatingUserChanged: (Boolean) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedRoleFilter by remember { mutableStateOf<RoleType?>(null) }
     var selectedUserForDetails by remember { mutableStateOf<AuthUser?>(null) }
     var userToDelete by remember { mutableStateOf<AuthUser?>(null) }
+    var userToEdit by remember { mutableStateOf<AuthUser?>(null) }
 
-    val filteredUsers = users.filter { user ->
-        val matchesSearch = user.name.contains(searchQuery, ignoreCase = true) ||
-                user.rut.contains(searchQuery, ignoreCase = true) ||
-                user.email.contains(searchQuery, ignoreCase = true) ||
-                user.detail.contains(searchQuery, ignoreCase = true)
-        val matchesRole = selectedRoleFilter == null || user.role == selectedRoleFilter
-        matchesSearch && matchesRole
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
-    ) {
-        // Encabezado
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Gestión de Usuarios",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Listado de usuarios registrados en Sanaesencia",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
-                textAlign = TextAlign.Center
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Filtro y Búsqueda
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Buscar", color = Color.Gray) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-            trailingIcon = {
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = { searchQuery = "" }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Limpiar")
-                    }
+    if (userToEdit != null) {
+        EditUserAdminScreen(
+            user = userToEdit!!,
+            onUpdateUser = { origEmail, name, rut, email, phone, password, role ->
+                val success = onUpdateUser(origEmail, name, rut, email, phone, password, role)
+                if (success) {
+                    userToEdit = null
                 }
+                success
             },
-            singleLine = true,
-            shape = RoundedCornerShape(12.dp)
+            onBack = { userToEdit = null }
         )
+    } else if (isCreatingUser) {
+        CreateUserAdminScreen(
+            onCreateUser = { name, rut, email, phone, password, role ->
+                val success = onCreateUser(name, rut, email, phone, password, role)
+                if (success) {
+                    onCreatingUserChanged(false)
+                }
+                success
+            },
+            onBack = { onCreatingUserChanged(false) }
+        )
+    } else {
+        Box(modifier = Modifier.fillMaxSize()) {
+            val filteredUsers = users.filter { user ->
+                val matchesSearch = user.name.contains(searchQuery, ignoreCase = true) ||
+                        user.rut.contains(searchQuery, ignoreCase = true) ||
+                        user.email.contains(searchQuery, ignoreCase = true) ||
+                        user.detail.contains(searchQuery, ignoreCase = true)
+                val matchesRole = selectedRoleFilter == null || user.role == selectedRoleFilter
+                matchesSearch && matchesRole
+            }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Filtro por Rol
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            FilterChip(
-                selected = selectedRoleFilter == null,
-                onClick = { selectedRoleFilter = null },
-                label = { Text("Todos") }
-            )
-            FilterChip(
-                selected = selectedRoleFilter == RoleType.PACIENTE,
-                onClick = { selectedRoleFilter = RoleType.PACIENTE },
-                label = { Text("Clientes") }
-            )
-            FilterChip(
-                selected = selectedRoleFilter == RoleType.ADMINISTRACION,
-                onClick = { selectedRoleFilter = RoleType.ADMINISTRACION },
-                label = { Text("Admins") }
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Tabla de Usuarios
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            shape = RoundedCornerShape(16.dp)
-        ) {
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
             ) {
-                // Título de la Tabla
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                // Encabezado
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Tabla de usuarios",
+                        text = "Gestión de Usuarios",
+                        style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleMedium
+                        textAlign = TextAlign.Center
                     )
                 }
 
-                HorizontalDivider()
+                Spacer(modifier = Modifier.height(20.dp))
 
-                if (filteredUsers.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
+                // Filtro y Búsqueda
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Buscar", color = Color.Gray) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(Icons.Default.Clear, contentDescription = "Limpiar")
+                            }
+                        }
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Filtro por Rol
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FilterChip(
+                        selected = selectedRoleFilter == null,
+                        onClick = { selectedRoleFilter = null },
+                        label = { Text("Todos") }
+                    )
+                    FilterChip(
+                        selected = selectedRoleFilter == RoleType.PACIENTE,
+                        onClick = { selectedRoleFilter = RoleType.PACIENTE },
+                        label = { Text("Clientes") }
+                    )
+                    FilterChip(
+                        selected = selectedRoleFilter == RoleType.ADMINISTRACION,
+                        onClick = { selectedRoleFilter = RoleType.ADMINISTRACION },
+                        label = { Text("Admins") }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Tabla de Usuarios
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = "No se encontraron usuarios con el criterio de búsqueda.",
-                            color = Color.Gray,
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                } else {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        // Encabezados de la Tabla
+                        // Título de la Tabla
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
-                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Nombre",
+                                text = "Tabla de usuarios",
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                modifier = Modifier.weight(1.1f)
+                                style = MaterialTheme.typography.titleMedium
                             )
-                            Text(
-                                text = "Rol",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                modifier = Modifier.weight(1.0f)
-                            )
-                            Spacer(modifier = Modifier.weight(1.2f))
                         }
 
                         HorizontalDivider()
 
-                        // Filas de la Tabla
-                        filteredUsers.forEachIndexed { index, user ->
-                            val backgroundColor = if (index % 2 == 0) {
-                                MaterialTheme.colorScheme.surface
-                            } else {
-                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
-                            }
-
-                            Row(
+                        if (filteredUsers.isEmpty()) {
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(backgroundColor)
-                                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                    .padding(32.dp),
+                                contentAlignment = Alignment.Center
                             ) {
-                                // Nombre
                                 Text(
-                                    text = user.name,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 13.sp,
-                                    modifier = Modifier.weight(1.1f),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    text = "No se encontraron usuarios con el criterio de búsqueda.",
+                                    color = Color.Gray,
+                                    textAlign = TextAlign.Center,
+                                    style = MaterialTheme.typography.bodyMedium
                                 )
-
-                                // Rol
-                                Text(
-                                    text = when (user.role) {
-                                        RoleType.ADMINISTRACION -> "Admin"
-                                        RoleType.PACIENTE -> "Cliente"
-                                    },
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color.Black,
-                                    modifier = Modifier.weight(1.0f),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-
-                                // Botones de Acción ('Ver' y 'Borrar')
+                            }
+                        } else {
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                // Encabezados de la Tabla
                                 Row(
-                                    modifier = Modifier.weight(1.2f),
-                                    horizontalArrangement = Arrangement.End,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                                        .padding(horizontal = 16.dp, vertical = 10.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    OutlinedButton(
-                                        onClick = { selectedUserForDetails = user },
-                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                                        shape = RoundedCornerShape(8.dp),
-                                        modifier = Modifier.height(30.dp)
-                                    ) {
-                                        Text("Ver", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        text = "Nombre",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        modifier = Modifier.weight(1.0f)
+                                    )
+                                    Text(
+                                        text = "Rol",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        modifier = Modifier.weight(0.9f)
+                                    )
+                                    Spacer(modifier = Modifier.weight(1.6f))
+                                }
+
+                                HorizontalDivider()
+
+                                // Filas de la Tabla
+                                filteredUsers.forEachIndexed { index, user ->
+                                    val backgroundColor = if (index % 2 == 0) {
+                                        MaterialTheme.colorScheme.surface
+                                    } else {
+                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
                                     }
 
-                                    Spacer(modifier = Modifier.width(6.dp))
-
-                                    Button(
-                                        onClick = { userToDelete = user },
-                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                                        shape = RoundedCornerShape(8.dp),
-                                        modifier = Modifier.height(30.dp)
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(backgroundColor)
+                                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text("Borrar", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        // Nombre
+                                        Text(
+                                            text = user.name,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 13.sp,
+                                            modifier = Modifier.weight(1.0f),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+
+                                        // Rol
+                                        Text(
+                                            text = when (user.role) {
+                                                RoleType.ADMINISTRACION -> "Admin"
+                                                RoleType.PACIENTE -> "Cliente"
+                                            },
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = Color.Black,
+                                            modifier = Modifier.weight(0.9f),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+
+                                        // Botones de Acción ('Ver', 'Editar' y 'Borrar')
+                                        Row(
+                                            modifier = Modifier.weight(1.6f),
+                                            horizontalArrangement = Arrangement.Start,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            OutlinedButton(
+                                                onClick = { selectedUserForDetails = user },
+                                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+                                                shape = RoundedCornerShape(8.dp),
+                                                modifier = Modifier.height(30.dp)
+                                            ) {
+                                                Text("Ver", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                            }
+
+                                            Spacer(modifier = Modifier.width(4.dp))
+
+                                            Button(
+                                                onClick = { userToEdit = user },
+                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
+                                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+                                                shape = RoundedCornerShape(8.dp),
+                                                modifier = Modifier.height(30.dp)
+                                            ) {
+                                                Text("Editar", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                            }
+
+                                            Spacer(modifier = Modifier.width(4.dp))
+
+                                            Button(
+                                                onClick = { userToDelete = user },
+                                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+                                                shape = RoundedCornerShape(8.dp),
+                                                modifier = Modifier.height(30.dp)
+                                            ) {
+                                                Text("Borrar", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                            }
+                                        }
+                                    }
+
+                                    if (index < filteredUsers.size - 1) {
+                                        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
                                     }
                                 }
-                            }
-
-                            if (index < filteredUsers.size - 1) {
-                                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
                             }
                         }
                     }
                 }
+            }
+
+            // Botón flotante circular con símbolo de más en la zona inferior izquierda
+            FloatingActionButton(
+                onClick = { onCreatingUserChanged(true) },
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(20.dp),
+                shape = CircleShape,
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Crear Usuario",
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
             }
         }
     }

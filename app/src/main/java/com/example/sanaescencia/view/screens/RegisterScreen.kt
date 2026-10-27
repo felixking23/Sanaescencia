@@ -26,7 +26,8 @@ fun RegisterScreen(
     onRegisterClick: (name: String, rut: String, email: String, phone: String, password: String) -> Boolean,
     onBackToLogin: () -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
+    var firstName by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
     var rut by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
@@ -101,10 +102,21 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Nombre Completo") },
+                    value = firstName,
+                    onValueChange = { firstName = it },
+                    label = { Text("Nombre") },
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = lastName,
+                    onValueChange = { lastName = it },
+                    label = { Text("Apellido") },
+                    leadingIcon = { Icon(Icons.Default.PersonOutline, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -188,8 +200,11 @@ fun RegisterScreen(
                 Button(
                     onClick = {
                         when {
-                            name.isBlank() -> {
-                                errorMessage = "Por favor ingresa tu nombre completo."
+                            firstName.isBlank() -> {
+                                errorMessage = "Por favor ingresa tu nombre."
+                            }
+                            lastName.isBlank() -> {
+                                errorMessage = "Por favor ingresa tu apellido."
                             }
                             rut.isBlank() -> {
                                 errorMessage = "Por favor ingresa tu RUT."
@@ -208,7 +223,8 @@ fun RegisterScreen(
                             }
                             else -> {
                                 errorMessage = null
-                                val success = onRegisterClick(name, rut, email, phone, password)
+                                val fullName = "$firstName $lastName".trim()
+                                val success = onRegisterClick(fullName, rut, email, phone, password)
                                 if (!success) {
                                     errorMessage = "No se pudo crear la cuenta. Intenta de nuevo."
                                 }

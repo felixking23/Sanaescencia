@@ -40,6 +40,12 @@ object SanaesenciaRepository {
         _users.value = _users.value.filter { it.email != user.email }
     }
 
+    fun updateUser(originalEmail: String, updatedUser: AuthUser) {
+        _users.value = _users.value.map {
+            if (it.email.equals(originalEmail, ignoreCase = true)) updatedUser else it
+        }
+    }
+
     // Catálogo de Especialidades Terapéuticas Reales
     val specialties = listOf(
         Specialty("1", "Psicología Infanto-Juvenil", "Dra. Camila Soto", "Atención psicológica integral para niños, adolescentes y orientación familiar.", 35000),

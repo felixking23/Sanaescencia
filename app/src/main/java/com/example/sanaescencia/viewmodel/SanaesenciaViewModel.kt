@@ -67,6 +67,40 @@ class SanaesenciaViewModel : ViewModel() {
         SanaesenciaRepository.deleteUser(user)
     }
 
+    fun createUserByAdmin(name: String, rut: String, email: String, phone: String, passwordInput: String, role: RoleType): Boolean {
+        val existingUser = SanaesenciaRepository.users.value.find {
+            it.email.equals(email.trim(), ignoreCase = true)
+        }
+        if (existingUser != null) {
+            return false
+        }
+        val newUser = AuthUser(
+            email = email.trim(),
+            passwordHash = passwordInput.trim(),
+            name = name.trim(),
+            rut = rut.trim(),
+            phone = phone.trim(),
+            role = role,
+            detail = if (role == RoleType.PACIENTE) "Cliente Registrado por Admin" else "Administrador del Centro"
+        )
+        SanaesenciaRepository.addUser(newUser)
+        return true
+    }
+
+    fun updateUser(originalEmail: String, name: String, rut: String, email: String, phone: String, passwordInput: String, role: RoleType): Boolean {
+        val updatedUser = AuthUser(
+            email = email.trim(),
+            passwordHash = passwordInput.trim(),
+            name = name.trim(),
+            rut = rut.trim(),
+            phone = phone.trim(),
+            role = role,
+            detail = if (role == RoleType.PACIENTE) "Cliente Actualizado" else "Administrador del Centro"
+        )
+        SanaesenciaRepository.updateUser(originalEmail, updatedUser)
+        return true
+    }
+
     // Acceso Rápido por Rol
     fun quickLogin(role: RoleType) {
         val user = SanaesenciaRepository.demoUsers.firstOrNull { it.role == role }

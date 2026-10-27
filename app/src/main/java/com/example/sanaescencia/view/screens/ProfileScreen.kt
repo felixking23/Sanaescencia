@@ -9,7 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,157 +25,190 @@ import com.example.sanaescencia.model.RoleType
 fun ProfileScreen(
     currentUser: AuthUser?,
     onSwitchRole: (RoleType) -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onUpdateProfile: (originalEmail: String, name: String, rut: String, email: String, phone: String, password: String, role: RoleType) -> Boolean
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.height(10.dp))
+    var isEditingProfile by remember { mutableStateOf(false) }
 
-        // Avatar del Perfil
-        Box(
+    if (isEditingProfile && currentUser != null) {
+        EditUserAdminScreen(
+            user = currentUser,
+            onUpdateUser = { origEmail, name, rut, email, phone, password, role ->
+                val success = onUpdateProfile(origEmail, name, rut, email, phone, password, role)
+                if (success) {
+                    isEditingProfile = false
+                }
+                success
+            },
+            onBack = { isEditingProfile = false }
+        )
+    } else {
+        Column(
             modifier = Modifier
-                .size(96.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = when (currentUser?.role) {
-                    RoleType.PACIENTE -> Icons.Default.Person
-                    RoleType.ADMINISTRACION -> Icons.Default.AdminPanelSettings
-                    null -> Icons.Default.AccountCircle
-                },
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(54.dp)
-            )
-        }
+            Spacer(modifier = Modifier.height(10.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Nombre y Correo
-        Text(
-            text = currentUser?.name ?: "Usuario",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = currentUser?.email ?: "",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Detalles de la Cuenta
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Información de la Cuenta",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                ProfileInfoRow(
-                    icon = Icons.Default.Person,
-                    label = "Nombre Completo",
-                    value = currentUser?.name ?: "Usuario"
-                )
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                ProfileInfoRow(
-                    icon = Icons.Default.Badge,
-                    label = "RUT",
-                    value = if (!currentUser?.rut.isNullOrBlank()) currentUser.rut else "Sin RUT registrado"
-                )
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                ProfileInfoRow(
-                    icon = Icons.Default.Phone,
-                    label = "Teléfono / WhatsApp",
-                    value = if (!currentUser?.phone.isNullOrBlank()) currentUser.phone else "Sin teléfono registrado"
-                )
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                ProfileInfoRow(
-                    icon = Icons.Default.Email,
-                    label = "Correo Electrónico",
-                    value = currentUser?.email ?: "No registrado"
-                )
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                ProfileInfoRow(
-                    icon = Icons.Default.VpnKey,
-                    label = "Contraseña de Acceso",
-                    value = currentUser?.passwordHash ?: "••••••"
+            // Avatar del Perfil
+            Box(
+                modifier = Modifier
+                    .size(96.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = when (currentUser?.role) {
+                        RoleType.PACIENTE -> Icons.Default.Person
+                        RoleType.ADMINISTRACION -> Icons.Default.AdminPanelSettings
+                        null -> Icons.Default.AccountCircle
+                    },
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(54.dp)
                 )
             }
-        }
 
-        Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Cambio Rápido de Rol (Demo)
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Cambiar Perfil Activo (Modo Demo)",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+            // Nombre y Correo
+            Text(
+                text = currentUser?.name ?: "Usuario",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = currentUser?.email ?: "",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray
+            )
 
-                RoleType.entries.forEach { role ->
-                    if (role != currentUser?.role) {
-                        OutlinedButton(
-                            onClick = { onSwitchRole(role) },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (role == RoleType.PACIENTE) Icons.Default.Person else Icons.Default.AdminPanelSettings,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Cambiar a ${role.displayName}")
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Detalles de la Cuenta
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Información de la Cuenta",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    ProfileInfoRow(
+                        icon = Icons.Default.Person,
+                        label = "Nombre Completo",
+                        value = currentUser?.name ?: "Usuario"
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                    ProfileInfoRow(
+                        icon = Icons.Default.Badge,
+                        label = "RUT",
+                        value = if (!currentUser?.rut.isNullOrBlank()) currentUser.rut else "Sin RUT registrado"
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                    ProfileInfoRow(
+                        icon = Icons.Default.Phone,
+                        label = "Teléfono / WhatsApp",
+                        value = if (!currentUser?.phone.isNullOrBlank()) currentUser.phone else "Sin teléfono registrado"
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                    ProfileInfoRow(
+                        icon = Icons.Default.Email,
+                        label = "Correo Electrónico",
+                        value = currentUser?.email ?: "No registrado"
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                    ProfileInfoRow(
+                        icon = Icons.Default.VpnKey,
+                        label = "Contraseña de Acceso",
+                        value = currentUser?.passwordHash ?: "••••••"
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Cambio Rápido de Rol (Demo)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Cambiar Perfil Activo (Modo Demo)",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    RoleType.entries.forEach { role ->
+                        if (role != currentUser?.role) {
+                            OutlinedButton(
+                                onClick = { onSwitchRole(role) },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (role == RoleType.PACIENTE) Icons.Default.Person else Icons.Default.AdminPanelSettings,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Cambiar a ${role.displayName}")
+                            }
                         }
                     }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // Botón Cerrar Sesión
-        Button(
-            onClick = onLogout,
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Icon(Icons.Default.ExitToApp, contentDescription = null)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Cerrar Sesión", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            // Botón Editar Perfil
+            Button(
+                onClick = { isEditingProfile = true },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(Icons.Default.Edit, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Editar Perfil", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Botón Cerrar Sesión
+            Button(
+                onClick = onLogout,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(Icons.Default.ExitToApp, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Cerrar Sesión", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }
