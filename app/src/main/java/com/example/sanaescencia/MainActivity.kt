@@ -133,7 +133,10 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                     NavTarget.CATALOGO -> CatalogScreen()
 
                     NavTarget.USUARIOS -> UsersManagementScreen(
-                        users = users
+                        users = users,
+                        onDeleteUser = { user ->
+                            viewModel.deleteUser(user)
+                        }
                     )
 
                     NavTarget.PERFIL -> ProfileScreen(

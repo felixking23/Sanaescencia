@@ -26,11 +26,13 @@ import com.example.sanaescencia.model.RoleType
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UsersManagementScreen(
-    users: List<AuthUser>
+    users: List<AuthUser>,
+    onDeleteUser: (AuthUser) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedRoleFilter by remember { mutableStateOf<RoleType?>(null) }
     var selectedUserForDetails by remember { mutableStateOf<AuthUser?>(null) }
+    var userToDelete by remember { mutableStateOf<AuthUser?>(null) }
 
     val filteredUsers = users.filter { user ->
         val matchesSearch = user.name.contains(searchQuery, ignoreCase = true) ||
@@ -40,9 +42,6 @@ fun UsersManagementScreen(
         val matchesRole = selectedRoleFilter == null || user.role == selectedRoleFilter
         matchesSearch && matchesRole
     }
-
-    val totalPatients = users.count { it.role == RoleType.PACIENTE }
-    val totalAdmins = users.count { it.role == RoleType.ADMINISTRACION }
 
     Column(
         modifier = Modifier
@@ -70,50 +69,6 @@ fun UsersManagementScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Tarjetas Resumen
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Card(
-                modifier = Modifier.weight(1f),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                shape = RoundedCornerShape(14.dp)
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text("Total Usuarios", style = MaterialTheme.typography.labelMedium)
-                    Text("${users.size}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                    Text("Registrados", style = MaterialTheme.typography.bodySmall)
-                }
-            }
-
-            Card(
-                modifier = Modifier.weight(1f),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
-                shape = RoundedCornerShape(14.dp)
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text("Clientes/Pacientes", style = MaterialTheme.typography.labelMedium)
-                    Text("$totalPatients", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
-                    Text("Clientes Activos", style = MaterialTheme.typography.bodySmall)
-                }
-            }
-
-            Card(
-                modifier = Modifier.weight(1f),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFEDE7F6)),
-                shape = RoundedCornerShape(14.dp)
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text("Administradores", style = MaterialTheme.typography.labelMedium)
-                    Text("$totalAdmins", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Color(0xFF512DA8))
-                    Text("Personal Centro", style = MaterialTheme.typography.bodySmall)
-                }
-            }
-        }
-
         Spacer(modifier = Modifier.height(20.dp))
 
         // Filtro y Búsqueda
@@ -121,7 +76,7 @@ fun UsersManagementScreen(
             value = searchQuery,
             onValueChange = { searchQuery = it },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Buscar por RUT, nombre o correo...") },
+            placeholder = { Text("Buscar", color = Color.Gray) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             trailingIcon = {
                 if (searchQuery.isNotEmpty()) {
@@ -178,13 +133,6 @@ fun UsersManagementScreen(
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        Icons.Default.Group,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Tabla de usuarios",
                         fontWeight = FontWeight.Bold,
@@ -219,18 +167,18 @@ fun UsersManagementScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "RUT",
+                                text = "Nombre",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
                                 modifier = Modifier.weight(1.1f)
                             )
                             Text(
-                                text = "Nombre",
+                                text = "Rol",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
-                                modifier = Modifier.weight(1.5f)
+                                modifier = Modifier.weight(1.0f)
                             )
-                            Spacer(modifier = Modifier.weight(0.8f))
+                            Spacer(modifier = Modifier.weight(1.2f))
                         }
 
                         HorizontalDivider()
@@ -250,56 +198,55 @@ fun UsersManagementScreen(
                                     .padding(horizontal = 16.dp, vertical = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // RUT
+                                // Nombre
                                 Text(
-                                    text = if (user.rut.isNotBlank()) user.rut else "Sin RUT",
-                                    fontSize = 13.sp,
+                                    text = user.name,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.primary,
+                                    fontSize = 13.sp,
                                     modifier = Modifier.weight(1.1f),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
 
-                                // Nombre
-                                Row(
-                                    modifier = Modifier.weight(1.5f),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = if (user.role == RoleType.PACIENTE) Icons.Default.Person else Icons.Default.AdminPanelSettings,
-                                        contentDescription = null,
-                                        tint = if (user.role == RoleType.PACIENTE) Color(0xFF2E7D32) else Color(0xFF512DA8),
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = user.name,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 13.sp,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
+                                // Rol
+                                Text(
+                                    text = when (user.role) {
+                                        RoleType.ADMINISTRACION -> "Admin"
+                                        RoleType.PACIENTE -> "Cliente"
+                                    },
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color.Black,
+                                    modifier = Modifier.weight(1.0f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
 
-                                // Botón 'Ver'
-                                Box(
-                                    modifier = Modifier.weight(0.8f),
-                                    contentAlignment = Alignment.Center
+                                // Botones de Acción ('Ver' y 'Borrar')
+                                Row(
+                                    modifier = Modifier.weight(1.2f),
+                                    horizontalArrangement = Arrangement.End,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     OutlinedButton(
                                         onClick = { selectedUserForDetails = user },
-                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
                                         shape = RoundedCornerShape(8.dp),
-                                        modifier = Modifier.height(32.dp)
+                                        modifier = Modifier.height(30.dp)
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Visibility,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Ver", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        Text("Ver", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    }
+
+                                    Spacer(modifier = Modifier.width(6.dp))
+
+                                    Button(
+                                        onClick = { userToDelete = user },
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.height(30.dp)
+                                    ) {
+                                        Text("Borrar", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -410,19 +357,40 @@ fun UsersManagementScreen(
 
                             UserDetailItem(
                                 icon = if (user.role == RoleType.ADMINISTRACION) Icons.Default.AdminPanelSettings else Icons.Default.AccountCircle,
-                                label = "Rol / Perfil",
+                                label = "Rol",
                                 value = user.role.displayName
-                            )
-
-                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                            UserDetailItem(
-                                icon = Icons.Default.Info,
-                                label = "Detalle de Cuenta",
-                                value = user.detail
                             )
                         }
                     }
+                }
+            }
+        )
+    }
+
+    // Modal / Diálogo para "Confirmación de Eliminación"
+    userToDelete?.let { user ->
+        AlertDialog(
+            onDismissRequest = { userToDelete = null },
+            title = {
+                Text("Eliminar Usuario", fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text("¿Estás seguro de que deseas eliminar la cuenta de ${user.name} (${user.email})? Esta acción no se puede deshacer.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDeleteUser(user)
+                        userToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Eliminar", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { userToDelete = null }) {
+                    Text("Cancelar")
                 }
             }
         )

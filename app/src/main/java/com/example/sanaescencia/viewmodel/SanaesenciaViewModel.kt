@@ -63,6 +63,10 @@ class SanaesenciaViewModel : ViewModel() {
         return true
     }
 
+    fun deleteUser(user: AuthUser) {
+        SanaesenciaRepository.deleteUser(user)
+    }
+
     // Acceso Rápido por Rol
     fun quickLogin(role: RoleType) {
         val user = SanaesenciaRepository.demoUsers.firstOrNull { it.role == role }

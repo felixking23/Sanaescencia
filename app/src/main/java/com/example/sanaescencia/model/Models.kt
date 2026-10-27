@@ -2,7 +2,7 @@ package com.example.sanaescencia.model
 
 enum class RoleType(val displayName: String, val description: String) {
     PACIENTE("Cliente / Paciente", "Explora el catálogo de productos, terapias y agenda sus atenciones"),
-    ADMINISTRACION("Administrador del Centro", "Gestiona el catálogo, la ocupación de los 8 boxes y alertas de deserción")
+    ADMINISTRACION("Administrador", "Gestiona el catálogo, la ocupación de los 8 boxes y alertas de deserción")
 }
 
 data class AuthUser(

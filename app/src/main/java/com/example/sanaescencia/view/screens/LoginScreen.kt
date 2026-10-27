@@ -215,11 +215,11 @@ fun LoginScreen(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp))
 
-                // Demo Cliente / Paciente
+                // Demo Cliente
                 DemoUserItem(
-                    title = "Cliente / Paciente",
+                    title = "Cliente",
                     email = "paciente@sanaescencia.cl",
-                    roleName = "María González",
+                    roleName = "Felipe Olguin",
                     icon = Icons.Default.Person,
                     onClick = {
                         email = "paciente@sanaescencia.cl"
@@ -232,9 +232,9 @@ fun LoginScreen(
 
                 // Demo Administrador
                 DemoUserItem(
-                    title = "Administrador del Centro",
+                    title = "Administrador",
                     email = "admin@sanaescencia.cl",
-                    roleName = "Administración (8 Boxes)",
+                    roleName = "Administración",
                     icon = Icons.Default.AdminPanelSettings,
                     onClick = {
                         email = "admin@sanaescencia.cl"
