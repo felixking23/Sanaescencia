@@ -1,11 +1,10 @@
 package com.example.sanaescencia.view.screens
 
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -16,194 +15,147 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.sanaescencia.model.NaturalProduct
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sanaescencia.model.ProductType
-import com.example.sanaescencia.repository.SanaesenciaRepository
+import com.example.sanaescencia.viewmodel.SanaesenciaViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CatalogScreen() {
-    val products = SanaesenciaRepository.products
-    var selectedFilter by remember { mutableStateOf<ProductType?>(null) }
+fun CatalogScreen(viewModel: SanaesenciaViewModel = viewModel()) {
+    val cartItems by viewModel.cartItems.collectAsState()
+    val products = viewModel.availableProducts
+    val specialties = viewModel.availableSpecialties
+
+    var selectedFilter by remember { mutableStateOf<String?>(null) }
     var searchQuery by remember { mutableStateOf("") }
+    var showCartSummary by remember { mutableStateOf(false) }
 
-    val filteredProducts = products.filter { product ->
-        val matchesType = selectedFilter == null || product.type == selectedFilter
-        val matchesSearch = searchQuery.isEmpty() ||
-                product.name.contains(searchQuery, ignoreCase = true) ||
-                product.description.contains(searchQuery, ignoreCase = true)
-        matchesType && matchesSearch
+    val filteredProducts = products.filter {
+        (selectedFilter == null || selectedFilter == it.type.name) &&
+                (searchQuery.isEmpty() || it.name.contains(searchQuery, ignoreCase = true))
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        // Título del Catálogo
-        Text(
-            text = "Catálogo de Productos Naturales",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = "Línea propia Sanaesencia: Kits, Roll-ons y Brumas aromáticas",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
-        )
+    val filteredSpecialties = specialties.filter {
+        (selectedFilter == null || selectedFilter == "TERAPIA") &&
+                (searchQuery.isEmpty() || it.name.contains(searchQuery, ignoreCase = true))
+    }
 
-        Spacer(modifier = Modifier.height(14.dp))
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Text("Catálogo de Prestaciones e Insumos", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text("Centralización de servicios terapéuticos y catálogo natural", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
 
-        // Buscador
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            placeholder = { Text("Buscar producto natural...") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-            trailingIcon = {
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = { searchQuery = "" }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Limpiar")
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Buscar servicio o producto...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item { FilterChip(selected = selectedFilter == null, onClick = { selectedFilter = null }, label = { Text("Todos") }) }
+                item { FilterChip(selected = selectedFilter == "TERAPIA", onClick = { selectedFilter = "TERAPIA" }, label = { Text("Terapias Integrativas") }) }
+                items(ProductType.entries.toTypedArray()) { type ->
+                    FilterChip(selected = selectedFilter == type.name, onClick = { selectedFilter = type.name }, label = { Text(type.label) })
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                if (filteredSpecialties.isNotEmpty()) {
+                    items(filteredSpecialties) { spec ->
+                        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))) {
+                            Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(spec.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                                    Text("Profesional: ${spec.professional}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                                    Text("$${spec.price}", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
+                                }
+                                IconButton(
+                                    onClick = { viewModel.addToCart(spec.id) },
+                                    colors = IconButtonDefaults.iconButtonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White)
+                                ) { Icon(Icons.Default.AddShoppingCart, contentDescription = null) }
+                            }
+                        }
                     }
                 }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            shape = RoundedCornerShape(12.dp)
-        )
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Barra Horizontal Desplazable para Filtros por Categoría (LazyRow)
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            item {
-                FilterChip(
-                    selected = selectedFilter == null,
-                    onClick = { selectedFilter = null },
-                    label = { Text("Todos (${products.size})") }
-                )
-            }
-            items(ProductType.entries.toTypedArray()) { type ->
-                FilterChip(
-                    selected = selectedFilter == type,
-                    onClick = { selectedFilter = if (selectedFilter == type) null else type },
-                    label = { Text(type.label) }
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Contenedor flexible del listado con weight(1f) para que ocupe todo el espacio disponible
-        Box(modifier = Modifier.weight(1f)) {
-            ProductList(products = filteredProducts)
-        }
-    }
-}
-
-@Composable
-fun ProductList(products: List<NaturalProduct>) {
-    var showSuccessDialog by remember { mutableStateOf<String?>(null) }
-
-    if (products.isEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("No se encontraron productos en esta categoría.", color = Color.Gray)
-        }
-    } else {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(products) { product ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    ),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier.size(48.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = when (product.type) {
-                                    ProductType.KIT -> Icons.Default.Inventory2
-                                    ProductType.ROLL_ON -> Icons.Default.WaterDrop
-                                    ProductType.BRUMA -> Icons.Default.Co2
-                                },
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = product.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "${product.type.label} · ${product.volume}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = product.description,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = "$${product.price}",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        IconButton(
-                            onClick = { showSuccessDialog = product.name },
-                            colors = IconButtonDefaults.iconButtonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = Color.White
-                            )
-                        ) {
-                            Icon(Icons.Default.AddShoppingCart, contentDescription = "Solicitar")
+                if (filteredProducts.isNotEmpty()) {
+                    items(filteredProducts) { prod ->
+                        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f))) {
+                            Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(prod.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                                    Text("${prod.type.label} · ${prod.volume}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                                    Text("$${prod.price}", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
+                                }
+                                IconButton(
+                                    onClick = { viewModel.addToCart(prod.id) },
+                                    colors = IconButtonDefaults.iconButtonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White)
+                                ) { Icon(Icons.Default.AddShoppingCart, contentDescription = null) }
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
-    showSuccessDialog?.let { productName ->
-        AlertDialog(
-            onDismissRequest = { showSuccessDialog = null },
-            title = { Text("Producto Solicitado") },
-            text = { Text("Has solicitado $productName. Puedes retirarlo en Recepción (Caupolicán 220, Los Vilos) o solicitar envío a domicilio.") },
-            confirmButton = {
-                TextButton(onClick = { showSuccessDialog = null }) {
-                    Text("Entendido")
+        if (cartItems.isNotEmpty()) {
+            ExtendedFloatingActionButton(
+                onClick = { showCartSummary = !showCartSummary },
+                icon = { Icon(Icons.Default.ShoppingCart, contentDescription = null) },
+                text = { Text("Ver Canasta (${cartItems.values.sum()})") },
+                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
+            )
+        }
+
+        AnimatedVisibility(
+            visible = showCartSummary,
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            Surface(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.45f), tonalElevation = 10.dp, shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Text("Canasta de Solicitudes", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    LazyColumn(modifier = Modifier.weight(1f)) {
+                        cartItems.forEach { (id, qty) ->
+                            val labelName = specialties.find { it.id == id }?.name ?: products.find { it.id == id }?.name ?: ""
+                            val labelPrice = specialties.find { it.id == id }?.price ?: products.find { it.id == id }?.price ?: 0
+                            item {
+                                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("$labelName (x$qty)", modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                                    Row {
+                                        Text("$${labelPrice * qty}", fontWeight = FontWeight.SemiBold)
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        IconButton(onClick = { viewModel.removeFromCart(id) }, modifier = Modifier.size(20.dp)) {
+                                            Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    Text("Total Estimado: $${viewModel.getCartTotal()}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        TextButton(onClick = { viewModel.clearCart(); showCartSummary = false }) { Text("Vaciar") }
+                        Button(onClick = { viewModel.clearCart(); showCartSummary = false }) { Text("Confirmar Registro") }
+                    }
                 }
             }
-        )
+        }
     }
 }

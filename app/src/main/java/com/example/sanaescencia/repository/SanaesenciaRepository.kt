@@ -140,4 +140,28 @@ object SanaesenciaRepository {
     fun dismissAlert(alertId: String) {
         _predictiveAlerts.value = _predictiveAlerts.value.filter { it.id != alertId }
     }
+
+    private val _cartItems = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val cartItems: StateFlow<Map<String, Int>> = _cartItems.asStateFlow()
+
+    fun addItemToCart(itemId: String) {
+        val currentMap = _cartItems.value.toMutableMap()
+        currentMap[itemId] = (currentMap[itemId] ?: 0) + 1
+        _cartItems.value = currentMap
+    }
+
+    fun removeItemFromCart(itemId: String) {
+        val currentMap = _cartItems.value.toMutableMap()
+        val currentQty = currentMap[itemId] ?: 0
+        if (currentQty > 1) {
+            currentMap[itemId] = currentQty - 1
+        } else {
+            currentMap.remove(itemId)
+        }
+        _cartItems.value = currentMap
+    }
+
+    fun clearCart() {
+        _cartItems.value = emptyMap()
+    }
 }

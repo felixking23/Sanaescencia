@@ -86,4 +86,30 @@ class SanaesenciaViewModel : ViewModel() {
     fun dismissAlert(alertId: String) {
         SanaesenciaRepository.dismissAlert(alertId)
     }
+
+    val cartItems: StateFlow<Map<String, Int>> = com.example.sanaescencia.repository.SanaesenciaRepository.cartItems
+    val availableSpecialties = com.example.sanaescencia.repository.SanaesenciaRepository.specialties
+    val availableProducts = com.example.sanaescencia.repository.SanaesenciaRepository.products
+
+    fun addToCart(itemId: String) {
+        com.example.sanaescencia.repository.SanaesenciaRepository.addItemToCart(itemId)
+    }
+
+    fun removeFromCart(itemId: String) {
+        com.example.sanaescencia.repository.SanaesenciaRepository.removeItemFromCart(itemId)
+    }
+
+    fun clearCart() {
+        com.example.sanaescencia.repository.SanaesenciaRepository.clearCart()
+    }
+
+    fun getCartTotal(): Int {
+        var total = 0
+        cartItems.value.forEach { (id, qty) ->
+            val specialtyPrice = availableSpecialties.find { it.id == id }?.price
+            val productPrice = availableProducts.find { it.id == id }?.price
+            total += ((specialtyPrice ?: productPrice ?: 0) * qty)
+        }
+        return total
+    }
 }
