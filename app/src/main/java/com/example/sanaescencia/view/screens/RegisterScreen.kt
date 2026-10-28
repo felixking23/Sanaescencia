@@ -15,11 +15,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.sanaescencia.model.formatRut
+import com.example.sanaescencia.model.isValidEmail
 
 @Composable
 fun RegisterScreen(
@@ -28,7 +34,7 @@ fun RegisterScreen(
 ) {
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
-    var rut by remember { mutableStateOf("") }
+    var rutValue by remember { mutableStateOf(TextFieldValue("")) }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -126,8 +132,14 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 OutlinedTextField(
-                    value = rut,
-                    onValueChange = { rut = it },
+                    value = rutValue,
+                    onValueChange = { input ->
+                        val formatted = formatRut(input.text)
+                        rutValue = TextFieldValue(
+                            text = formatted,
+                            selection = TextRange(formatted.length)
+                        )
+                    },
                     label = { Text("RUT (ej: 12.345.678-9)") },
                     leadingIcon = { Icon(Icons.Default.Badge, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
@@ -139,9 +151,10 @@ fun RegisterScreen(
 
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = { email = it.filterNot { c -> c.isWhitespace() } },
                     label = { Text("Correo Electrónico") },
                     leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp)
@@ -213,14 +226,14 @@ fun RegisterScreen(
                             lastName.isBlank() -> {
                                 errorMessage = "Por favor ingresa tu apellido."
                             }
-                            rut.isBlank() -> {
+                            rutValue.text.isBlank() -> {
                                 errorMessage = "Por favor ingresa tu RUT."
                             }
                             email.isBlank() -> {
                                 errorMessage = "Por favor ingresa tu correo electrónico."
                             }
-                            !email.contains("@") -> {
-                                errorMessage = "Por favor ingresa un correo electrónico válido."
+                            !isValidEmail(email) -> {
+                                errorMessage = "El correo electrónico debe ser válido (ejemplo: usuario@correo.com)."
                             }
                             password.isBlank() -> {
                                 errorMessage = "Por favor ingresa una contraseña."
@@ -231,7 +244,7 @@ fun RegisterScreen(
                             else -> {
                                 errorMessage = null
                                 val fullName = "$firstName $lastName".trim()
-                                val success = onRegisterClick(fullName, rut, email, phone, password)
+                                val success = onRegisterClick(fullName, rutValue.text, email, phone, password)
                                 if (!success) {
                                     errorMessage = "No se pudo crear la cuenta. Intenta de nuevo."
                                 }

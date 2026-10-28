@@ -16,10 +16,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sanaescencia.model.AuthUser
 import com.example.sanaescencia.model.RoleType
+import com.example.sanaescencia.model.formatRut
+import com.example.sanaescencia.model.isValidEmail
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,7 +37,8 @@ fun EditUserAdminScreen(
     val nameParts = user.name.split(" ", limit = 2)
     var firstName by remember { mutableStateOf(nameParts.getOrNull(0) ?: "") }
     var lastName by remember { mutableStateOf(nameParts.getOrNull(1) ?: "") }
-    var rut by remember { mutableStateOf(user.rut) }
+    val initialRut = formatRut(user.rut)
+    var rutValue by remember { mutableStateOf(TextFieldValue(initialRut, selection = TextRange(initialRut.length))) }
     var email by remember { mutableStateOf(user.email) }
     var phone by remember { mutableStateOf(user.phone) }
     var password by remember { mutableStateOf(user.passwordHash) }
@@ -142,8 +149,14 @@ fun EditUserAdminScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
-                value = rut,
-                onValueChange = { rut = it },
+                value = rutValue,
+                onValueChange = { input ->
+                    val formatted = formatRut(input.text)
+                    rutValue = TextFieldValue(
+                        text = formatted,
+                        selection = TextRange(formatted.length)
+                    )
+                },
                 label = { Text("RUT (ej: 12.345.678-9)") },
                 leadingIcon = { Icon(Icons.Default.Badge, contentDescription = null) },
                 modifier = Modifier.fillMaxWidth(),
@@ -155,9 +168,10 @@ fun EditUserAdminScreen(
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = { email = it.filterNot { c -> c.isWhitespace() } },
                 label = { Text("Correo Electrónico") },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp)
@@ -229,14 +243,14 @@ fun EditUserAdminScreen(
                         lastName.isBlank() -> {
                             errorMessage = "Por favor ingresa el apellido."
                         }
-                        rut.isBlank() -> {
+                        rutValue.text.isBlank() -> {
                             errorMessage = "Por favor ingresa el RUT."
                         }
                         email.isBlank() -> {
                             errorMessage = "Por favor ingresa el correo electrónico."
                         }
-                        !email.contains("@") -> {
-                            errorMessage = "Por favor ingresa un correo electrónico válido."
+                        !isValidEmail(email) -> {
+                            errorMessage = "El correo electrónico debe ser válido (ejemplo: usuario@correo.com)."
                         }
                         password.isBlank() -> {
                             errorMessage = "Por favor ingresa una contraseña."
@@ -247,7 +261,7 @@ fun EditUserAdminScreen(
                         else -> {
                             errorMessage = null
                             val fullName = "$firstName $lastName".trim()
-                            val success = onUpdateUser(user.email, fullName, rut, email, phone, password, selectedRole)
+                            val success = onUpdateUser(user.email, fullName, rutValue.text, email, phone, password, selectedRole)
                             if (!success) {
                                 errorMessage = "No se pudo actualizar el usuario."
                             }

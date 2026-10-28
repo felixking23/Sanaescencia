@@ -101,3 +101,33 @@ data class PredictiveAlert(
     val alertType: AlertType,
     val isDismissed: Boolean = false
 )
+
+fun formatRut(rawInput: String): String {
+    val cleaned = rawInput.filter { it.isDigit() || it == 'k' || it == 'K' }
+    if (cleaned.isEmpty()) return ""
+
+    val trimmed = cleaned.take(9)
+    if (trimmed.length == 1) return trimmed.uppercase()
+
+    val body = trimmed.dropLast(1)
+    val dv = trimmed.last().uppercaseChar()
+    if (body.isEmpty()) return dv.toString()
+
+    val formattedBody = StringBuilder()
+    var count = 0
+    for (i in body.length - 1 downTo 0) {
+        formattedBody.append(body[i])
+        count++
+        if (count == 3 && i != 0) {
+            formattedBody.append('.')
+            count = 0
+        }
+    }
+
+    return "${formattedBody.reverse()}-$dv"
+}
+
+fun isValidEmail(email: String): Boolean {
+    val emailRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$".toRegex()
+    return email.trim().matches(emailRegex)
+}
