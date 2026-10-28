@@ -19,7 +19,7 @@ Solución móvil desarrollada para nuestro cliente, el Centro Integrativo Sanaes
 - **Modo Demo Integrado:** Acceso rápido en la pantalla principal para facilitar la evaluación directa de flujos por parte del docente.
 - **Uso de Recursos Nativos:** Integración mediante Intents explícitos e implícitos para llamadas de soporte técnico y geolocalización por GPS redirigida a Google Maps hacia la sucursal física en Los Vilos (Caupolicán 220).
 
-🛒 Módulo de Catálogo Centralizado y Canasta Reactiva
+## 🛒 Módulo de Catálogo Centralizado y Canasta Reactiva
 
 - **Catálogo Unificado de Prestaciones:** Interfaz gráfica optimizada para el rol `PACIENTE` que consolida la oferta de terapias clínicas (Psicología, Fonoaudiología, Terapia Ocupacional) e insumos naturales de bienestar de la línea propia Sanaesencia.
 - **Buscador y Filtros Dinámicos (LazyRow):** Implementación de un motor de búsqueda predictiva por texto y chips de filtrado categórico por tipo de producto/servicio para agilizar la navegación de la demanda.
