@@ -22,6 +22,8 @@ class SanaesenciaViewModel : ViewModel() {
     val patientContinuityList: StateFlow<List<PatientContinuity>> = SanaesenciaRepository.patientContinuityList
     val predictiveAlerts: StateFlow<List<PredictiveAlert>> = SanaesenciaRepository.predictiveAlerts
 
+
+
     // Inicio de Sesión por Credenciales
     fun login(emailInput: String, passwordInput: String): Boolean {
         val user = SanaesenciaRepository.demoUsers.find {
@@ -86,4 +88,10 @@ class SanaesenciaViewModel : ViewModel() {
     fun dismissAlert(alertId: String) {
         SanaesenciaRepository.dismissAlert(alertId)
     }
+
+    //efe
+
+
+
+
 }

@@ -140,4 +140,10 @@ object SanaesenciaRepository {
     fun dismissAlert(alertId: String) {
         _predictiveAlerts.value = _predictiveAlerts.value.filter { it.id != alertId }
     }
+
+     fun addCarrito() {
+
+    }
+
+
 }
