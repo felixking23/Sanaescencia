@@ -87,29 +87,72 @@ class SanaesenciaViewModel : ViewModel() {
         SanaesenciaRepository.dismissAlert(alertId)
     }
 
-    val cartItems: StateFlow<Map<String, Int>> = com.example.sanaescencia.repository.SanaesenciaRepository.cartItems
-    val availableSpecialties = com.example.sanaescencia.repository.SanaesenciaRepository.specialties
-    val availableProducts = com.example.sanaescencia.repository.SanaesenciaRepository.products
+    val cartItems: StateFlow<Map<String, Int>> = SanaesenciaRepository.cartItems
+    val specialties: StateFlow<List<Specialty>> = SanaesenciaRepository.specialties
+    val products: StateFlow<List<NaturalProduct>> = SanaesenciaRepository.products
+
+    // Compatibilidad para referencias existentes
+    val availableSpecialties = specialties
+    val availableProducts = products
 
     fun addToCart(itemId: String) {
-        com.example.sanaescencia.repository.SanaesenciaRepository.addItemToCart(itemId)
+        SanaesenciaRepository.addItemToCart(itemId)
     }
 
     fun removeFromCart(itemId: String) {
-        com.example.sanaescencia.repository.SanaesenciaRepository.removeItemFromCart(itemId)
+        SanaesenciaRepository.removeItemFromCart(itemId)
     }
 
     fun clearCart() {
-        com.example.sanaescencia.repository.SanaesenciaRepository.clearCart()
+        SanaesenciaRepository.clearCart()
     }
 
     fun getCartTotal(): Int {
         var total = 0
         cartItems.value.forEach { (id, qty) ->
-            val specialtyPrice = availableSpecialties.find { it.id == id }?.price
-            val productPrice = availableProducts.find { it.id == id }?.price
+            val specialtyPrice = specialties.value.find { it.id == id }?.price
+            val productPrice = products.value.find { it.id == id }?.price
             total += ((specialtyPrice ?: productPrice ?: 0) * qty)
         }
         return total
+    }
+
+    fun addProduct(name: String, type: ProductType, price: Int, description: String, volume: String) {
+        val prod = NaturalProduct(
+            id = "prod_${System.currentTimeMillis()}",
+            name = name,
+            type = type,
+            price = price,
+            description = description,
+            volume = volume
+        )
+        SanaesenciaRepository.addProduct(prod)
+    }
+
+    fun updateProduct(product: NaturalProduct) {
+        SanaesenciaRepository.updateProduct(product)
+    }
+
+    fun deleteProduct(productId: String) {
+        SanaesenciaRepository.deleteProduct(productId)
+    }
+
+    fun addSpecialty(name: String, professional: String, description: String, price: Int) {
+        val spec = Specialty(
+            id = "spec_${System.currentTimeMillis()}",
+            name = name,
+            professional = professional,
+            description = description,
+            price = price
+        )
+        SanaesenciaRepository.addSpecialty(spec)
+    }
+
+    fun updateSpecialty(specialty: Specialty) {
+        SanaesenciaRepository.updateSpecialty(specialty)
+    }
+
+    fun deleteSpecialty(specialtyId: String) {
+        SanaesenciaRepository.deleteSpecialty(specialtyId)
     }
 }

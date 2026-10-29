@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
 enum class NavTarget(val title: String, val icon: ImageVector) {
     INICIO("Inicio", Icons.Default.Home),
     CATALOGO("Catálogo", Icons.Default.Storefront),
+    ADMIN("Admin", Icons.Default.Dashboard),
     PERFIL("Perfil", Icons.Default.Person)
 }
 
@@ -42,6 +43,8 @@ enum class NavTarget(val title: String, val icon: ImageVector) {
 fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
     val currentUser by viewModel.currentUser.collectAsState()
     val loginError by viewModel.loginError.collectAsState()
+    val boxes by viewModel.boxes.collectAsState()
+    val patientContinuityList by viewModel.patientContinuityList.collectAsState()
 
     var currentScreen by remember { mutableStateOf(NavTarget.INICIO) }
 
@@ -55,7 +58,7 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                 viewModel.quickLogin(role)
                 currentScreen = when (role) {
                     RoleType.PACIENTE -> NavTarget.INICIO
-                    RoleType.ADMINISTRACION -> NavTarget.PERFIL
+                    RoleType.ADMINISTRACION -> NavTarget.ADMIN
                 }
             },
             errorMessage = loginError
@@ -70,7 +73,7 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                         viewModel.switchRole(role)
                         currentScreen = when (role) {
                             RoleType.PACIENTE -> NavTarget.INICIO
-                            RoleType.ADMINISTRACION -> NavTarget.PERFIL
+                            RoleType.ADMINISTRACION -> NavTarget.ADMIN
                         }
                     },
                     onLogout = {
@@ -83,7 +86,7 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                     val userRole = currentUser?.role ?: RoleType.PACIENTE
                     val availableTabs = when (userRole) {
                         RoleType.PACIENTE -> listOf(NavTarget.INICIO, NavTarget.CATALOGO, NavTarget.PERFIL)
-                        RoleType.ADMINISTRACION -> listOf(NavTarget.PERFIL)
+                        RoleType.ADMINISTRACION -> listOf(NavTarget.ADMIN, NavTarget.CATALOGO, NavTarget.PERFIL)
                     }
 
                     availableTabs.forEach { tab ->
@@ -110,13 +113,19 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
 
                     NavTarget.CATALOGO -> CatalogScreen()
 
+                    NavTarget.ADMIN -> AdminDashboardScreen(
+                        boxes = boxes,
+                        patientContinuityList = patientContinuityList,
+                        onSendPromotion = { patientId -> viewModel.sendPromotionToPatient(patientId) }
+                    )
+
                     NavTarget.PERFIL -> ProfileScreen(
                         currentUser = currentUser,
                         onSwitchRole = { role ->
                             viewModel.switchRole(role)
                             currentScreen = when (role) {
                                 RoleType.PACIENTE -> NavTarget.INICIO
-                                RoleType.ADMINISTRACION -> NavTarget.PERFIL
+                                RoleType.ADMINISTRACION -> NavTarget.ADMIN
                             }
                         },
                         onLogout = {
