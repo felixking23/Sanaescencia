@@ -20,8 +20,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import com.example.sanaescencia.model.AuthUser
 import com.example.sanaescencia.model.RoleType
+import com.example.sanaescencia.model.base64ToBitmap
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,7 +33,7 @@ fun UsersManagementScreen(
     users: List<AuthUser>,
     onDeleteUser: (AuthUser) -> Unit,
     onCreateUser: (name: String, rut: String, email: String, phone: String, password: String, role: RoleType) -> Boolean,
-    onUpdateUser: (originalEmail: String, name: String, rut: String, email: String, phone: String, password: String, role: RoleType) -> Boolean,
+    onUpdateUser: (originalEmail: String, name: String, rut: String, email: String, phone: String, password: String, role: RoleType, profileImageUri: String) -> Boolean,
     isCreatingUser: Boolean,
     onCreatingUserChanged: (Boolean) -> Unit,
     isEditingUser: Boolean,
@@ -48,8 +52,8 @@ fun UsersManagementScreen(
     if (userToEdit != null) {
         EditUserAdminScreen(
             user = userToEdit!!,
-            onUpdateUser = { origEmail, name, rut, email, phone, password, role ->
-                val success = onUpdateUser(origEmail, name, rut, email, phone, password, role)
+            onUpdateUser = { origEmail, name, rut, email, phone, password, role, imageUri ->
+                val success = onUpdateUser(origEmail, name, rut, email, phone, password, role, imageUri)
                 if (success) {
                     userToEdit = null
                 }
@@ -351,6 +355,7 @@ fun UsersManagementScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Foto de Perfil / Avatar
+                    val userBitmap = remember(user.profileImageUri) { base64ToBitmap(user.profileImageUri) }
                     Box(
                         modifier = Modifier
                             .size(80.dp)
@@ -360,12 +365,21 @@ fun UsersManagementScreen(
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = if (user.role == RoleType.PACIENTE) Icons.Default.Person else Icons.Default.AdminPanelSettings,
-                            contentDescription = null,
-                            tint = if (user.role == RoleType.PACIENTE) Color(0xFF2E7D32) else Color(0xFF512DA8),
-                            modifier = Modifier.size(46.dp)
-                        )
+                        if (userBitmap != null) {
+                            Image(
+                                bitmap = userBitmap.asImageBitmap(),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Icon(
+                                imageVector = if (user.role == RoleType.PACIENTE) Icons.Default.Person else Icons.Default.AdminPanelSettings,
+                                contentDescription = null,
+                                tint = if (user.role == RoleType.PACIENTE) Color(0xFF2E7D32) else Color(0xFF512DA8),
+                                modifier = Modifier.size(46.dp)
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))

@@ -1,5 +1,10 @@
 package com.example.sanaescencia.model
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
+import java.io.ByteArrayOutputStream
+
 enum class RoleType(val displayName: String, val description: String) {
     PACIENTE("Cliente / Paciente", "Explora el catálogo de productos, terapias y agenda sus atenciones"),
     ADMINISTRACION("Administrador", "Gestiona el catálogo, la ocupación de los 8 boxes y alertas de deserción")
@@ -12,7 +17,8 @@ data class AuthUser(
     val rut: String = "",
     val phone: String = "",
     val role: RoleType,
-    val detail: String
+    val detail: String,
+    val profileImageUri: String = ""
 )
 
 data class Specialty(
@@ -130,4 +136,20 @@ fun formatRut(rawInput: String): String {
 fun isValidEmail(email: String): Boolean {
     val emailRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$".toRegex()
     return email.trim().matches(emailRegex)
+}
+
+fun bitmapToBase64(bitmap: Bitmap): String {
+    val outputStream = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.PNG, 90, outputStream)
+    return Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)
+}
+
+fun base64ToBitmap(base64Str: String): Bitmap? {
+    return try {
+        if (base64Str.isBlank()) return null
+        val decodedBytes = Base64.decode(base64Str, Base64.DEFAULT)
+        BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+    } catch (e: Exception) {
+        null
+    }
 }

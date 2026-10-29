@@ -3,7 +3,6 @@ package com.example.sanaescencia.view.screens
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
-import android.os.Build
 import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,20 +33,42 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sanaescencia.model.AuthUser
 import com.example.sanaescencia.model.RoleType
+import com.example.sanaescencia.model.base64ToBitmap
+import com.example.sanaescencia.model.bitmapToBase64
 
 @Composable
 fun ProfileScreen(
     currentUser: AuthUser?,
     onSwitchRole: (RoleType) -> Unit,
     onLogout: () -> Unit,
-    onUpdateProfile: (originalEmail: String, name: String, rut: String, email: String, phone: String, password: String, role: RoleType) -> Boolean,
+    onUpdateProfile: (originalEmail: String, name: String, rut: String, email: String, phone: String, password: String, role: RoleType, profileImageUri: String) -> Boolean,
     isEditingProfile: Boolean,
     onEditingProfileChanged: (Boolean) -> Unit
 ) {
-    var profileBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var profileBitmap by remember(currentUser?.profileImageUri) {
+        mutableStateOf(currentUser?.profileImageUri?.let { base64ToBitmap(it) })
+    }
     var showImagePickerDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+
+    LaunchedEffect(profileBitmap) {
+        if (profileBitmap != null && currentUser != null) {
+            val base64 = bitmapToBase64(profileBitmap!!)
+            if (base64 != currentUser.profileImageUri) {
+                onUpdateProfile(
+                    currentUser.email,
+                    currentUser.name,
+                    currentUser.rut,
+                    currentUser.email,
+                    currentUser.phone,
+                    currentUser.passwordHash,
+                    currentUser.role,
+                    base64
+                )
+            }
+        }
+    }
 
     // Launcher para la Cámara
     val cameraLauncher = rememberLauncherForActivityResult(
@@ -73,8 +94,8 @@ fun ProfileScreen(
     if (isEditingProfile && currentUser != null) {
         EditUserAdminScreen(
             user = currentUser,
-            onUpdateUser = { origEmail, name, rut, email, phone, password, role ->
-                val success = onUpdateProfile(origEmail, name, rut, email, phone, password, role)
+            onUpdateUser = { origEmail, name, rut, email, phone, password, role, imageUri ->
+                val success = onUpdateProfile(origEmail, name, rut, email, phone, password, role, imageUri)
                 if (success) {
                     onEditingProfileChanged(false)
                 }
@@ -92,48 +113,52 @@ fun ProfileScreen(
         ) {
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Avatar del Perfil interactivo con insignia de cámara
+            // Avatar del Perfil interactivo con insignia de lápiz completamente visible
             Box(
                 modifier = Modifier
                     .size(100.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer)
                     .clickable { showImagePickerDialog = true },
                 contentAlignment = Alignment.Center
             ) {
-                if (profileBitmap != null) {
-                    Image(
-                        bitmap = profileBitmap!!.asImageBitmap(),
-                        contentDescription = "Foto de perfil",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(CircleShape)
-                    )
-                } else {
-                    Icon(
-                        imageVector = when (currentUser?.role) {
-                            RoleType.PACIENTE -> Icons.Default.Person
-                            RoleType.ADMINISTRACION -> Icons.Default.AdminPanelSettings
-                            null -> Icons.Default.AccountCircle
-                        },
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(54.dp)
-                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (profileBitmap != null) {
+                        Image(
+                            bitmap = profileBitmap!!.asImageBitmap(),
+                            contentDescription = "Foto de perfil",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Icon(
+                            imageVector = when (currentUser?.role) {
+                                RoleType.PACIENTE -> Icons.Default.Person
+                                RoleType.ADMINISTRACION -> Icons.Default.AdminPanelSettings
+                                null -> Icons.Default.AccountCircle
+                            },
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(54.dp)
+                        )
+                    }
                 }
 
-                // Insignia superpuesta en la esquina para indicar que se puede cambiar la foto
+                // Insignia superpuesta en la esquina completamente visible
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .size(30.dp)
+                        .size(32.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primary),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.CameraAlt,
+                        imageVector = Icons.Default.Edit,
                         contentDescription = "Cambiar Foto",
                         tint = Color.White,
                         modifier = Modifier.size(16.dp)

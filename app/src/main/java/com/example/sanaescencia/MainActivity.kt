@@ -157,8 +157,8 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                         onCreateUser = { name, rut, email, phone, password, role ->
                             viewModel.createUserByAdmin(name, rut, email, phone, password, role)
                         },
-                        onUpdateUser = { originalEmail, name, rut, email, phone, password, role ->
-                            viewModel.updateUser(originalEmail, name, rut, email, phone, password, role)
+                        onUpdateUser = { originalEmail, name, rut, email, phone, password, role, imageUri ->
+                            viewModel.updateUser(originalEmail, name, rut, email, phone, password, role, imageUri)
                         },
                         isCreatingUser = isCreatingUserAdmin,
                         onCreatingUserChanged = { isCreatingUserAdmin = it },
@@ -180,8 +180,8 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                             isEditingOwnProfile = false
                             viewModel.logout()
                         },
-                        onUpdateProfile = { originalEmail, name, rut, email, phone, password, role ->
-                            viewModel.updateUser(originalEmail, name, rut, email, phone, password, role)
+                        onUpdateProfile = { originalEmail, name, rut, email, phone, password, role, imageUri ->
+                            viewModel.updateUser(originalEmail, name, rut, email, phone, password, role, imageUri)
                         },
                         isEditingProfile = isEditingOwnProfile,
                         onEditingProfileChanged = { isEditingOwnProfile = it }

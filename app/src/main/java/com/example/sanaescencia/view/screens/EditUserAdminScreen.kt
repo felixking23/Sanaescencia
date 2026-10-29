@@ -31,7 +31,7 @@ import com.example.sanaescencia.model.isValidEmail
 @Composable
 fun EditUserAdminScreen(
     user: AuthUser,
-    onUpdateUser: (originalEmail: String, name: String, rut: String, email: String, phone: String, password: String, role: RoleType) -> Boolean,
+    onUpdateUser: (originalEmail: String, name: String, rut: String, email: String, phone: String, password: String, role: RoleType, profileImageUri: String) -> Boolean,
     onBack: () -> Unit
 ) {
     val nameParts = user.name.split(" ", limit = 2)
@@ -261,7 +261,7 @@ fun EditUserAdminScreen(
                         else -> {
                             errorMessage = null
                             val fullName = "$firstName $lastName".trim()
-                            val success = onUpdateUser(user.email, fullName, rutValue.text, email, phone, password, selectedRole)
+                            val success = onUpdateUser(user.email, fullName, rutValue.text, email, phone, password, selectedRole, user.profileImageUri)
                             if (!success) {
                                 errorMessage = "No se pudo actualizar el usuario."
                             }

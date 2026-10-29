@@ -87,7 +87,10 @@ class SanaesenciaViewModel : ViewModel() {
         return true
     }
 
-    fun updateUser(originalEmail: String, name: String, rut: String, email: String, phone: String, passwordInput: String, role: RoleType): Boolean {
+    fun updateUser(originalEmail: String, name: String, rut: String, email: String, phone: String, passwordInput: String, role: RoleType, profileImageUri: String = ""): Boolean {
+        val existingUser = SanaesenciaRepository.users.value.find { it.email.equals(originalEmail, ignoreCase = true) }
+        val imageToUse = if (profileImageUri.isNotBlank()) profileImageUri else (existingUser?.profileImageUri ?: "")
+
         val updatedUser = AuthUser(
             email = email.trim(),
             passwordHash = passwordInput.trim(),
@@ -95,9 +98,13 @@ class SanaesenciaViewModel : ViewModel() {
             rut = rut.trim(),
             phone = phone.trim(),
             role = role,
-            detail = if (role == RoleType.PACIENTE) "Cliente Actualizado" else "Administrador del Centro"
+            detail = if (role == RoleType.PACIENTE) "Cliente Actualizado" else "Administrador del Centro",
+            profileImageUri = imageToUse
         )
         SanaesenciaRepository.updateUser(originalEmail, updatedUser)
+        if (_currentUser.value?.email.equals(originalEmail, ignoreCase = true) || _currentUser.value?.email.equals(email, ignoreCase = true)) {
+            _currentUser.value = updatedUser
+        }
         return true
     }
 
