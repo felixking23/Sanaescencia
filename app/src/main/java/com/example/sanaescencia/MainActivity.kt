@@ -93,12 +93,14 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                     currentUser = currentUser,
                     onSwitchRole = { role ->
                         viewModel.switchRole(role)
+                        isEditingOwnProfile = false
                         currentScreen = when (role) {
                             RoleType.PACIENTE -> NavTarget.INICIO
                             RoleType.ADMINISTRACION -> NavTarget.PERFIL
                         }
                     },
                     onLogout = {
+                        isEditingOwnProfile = false
                         viewModel.logout()
                     }
                 )
