@@ -309,11 +309,11 @@ fun UsersManagementScreen(
                 }
             }
 
-            // Botón flotante circular con símbolo de más en la zona inferior izquierda
+            // Botón flotante circular con símbolo de más en la zona inferior derecha
             FloatingActionButton(
                 onClick = { onCreatingUserChanged(true) },
                 modifier = Modifier
-                    .align(Alignment.BottomStart)
+                    .align(Alignment.BottomEnd)
                     .padding(20.dp),
                 shape = CircleShape,
                 containerColor = MaterialTheme.colorScheme.primary
