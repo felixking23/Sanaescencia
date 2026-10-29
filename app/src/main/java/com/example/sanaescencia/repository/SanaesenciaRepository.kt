@@ -7,23 +7,44 @@ import kotlinx.coroutines.flow.asStateFlow
 
 object SanaesenciaRepository {
 
-    // --- Credenciales de Demostración para Inicio de Sesión ---
+    // --- Credenciales de Demostración y Usuarios del Sistema ---
     val demoUsers = listOf(
-        AuthUser(
-            email = "paciente@sanaescencia.cl",
-            passwordHash = "123456",
-            name = "María González",
-            role = RoleType.PACIENTE,
-            detail = "Cliente / Paciente Activo"
-        ),
         AuthUser(
             email = "admin@sanaescencia.cl",
             passwordHash = "123456",
-            name = "Administración Los Vilos",
+            name = "Admin Jefe",
+            rut = "15.820.491-3",
+            phone = "+56 9 1234 5678",
             role = RoleType.ADMINISTRACION,
             detail = "Gestión del Catálogo de Productos y 8 Boxes"
+        ),
+        AuthUser(
+            email = "paciente@sanaescencia.cl",
+            passwordHash = "123456",
+            name = "Felipe Olguin",
+            rut = "18.452.193-K",
+            phone = "+56 9 8765 4321",
+            role = RoleType.PACIENTE,
+            detail = "Cliente / Paciente Activo"
         )
     )
+
+    private val _users = MutableStateFlow(demoUsers)
+    val users: StateFlow<List<AuthUser>> = _users.asStateFlow()
+
+    fun addUser(user: AuthUser) {
+        _users.value = _users.value + user
+    }
+
+    fun deleteUser(user: AuthUser) {
+        _users.value = _users.value.filter { it.email != user.email }
+    }
+
+    fun updateUser(originalEmail: String, updatedUser: AuthUser) {
+        _users.value = _users.value.map {
+            if (it.email.equals(originalEmail, ignoreCase = true)) updatedUser else it
+        }
+    }
 
     // Catálogo de Especialidades Terapéuticas Reales
     val specialties = listOf(
@@ -53,7 +74,7 @@ object SanaesenciaRepository {
     // Estado en Vivo de Citas
     private val _appointments = MutableStateFlow(
         listOf(
-            Appointment("a1", "María González", "paciente@sanaescencia.cl", "Psicología Infanto-Juvenil", "Dra. Camila Soto", "Hoy", "15:00 hrs", AppointmentModality.PRESENCIA_LOS_VILOS, boxNumber = 1),
+            Appointment("a1", "Felipe Olguin", "paciente@sanaescencia.cl", "Psicología Infanto-Juvenil", "Dra. Camila Soto", "Hoy", "15:00 hrs", AppointmentModality.PRESENCIA_LOS_VILOS, boxNumber = 1),
             Appointment("a2", "Tomás Tapia", "ttapia@mail.com", "Terapia Ocupacional", "Lic. Roberto Silva", "Mañana", "11:00 hrs", AppointmentModality.PRESENCIA_LOS_VILOS, boxNumber = 2),
             Appointment("a3", "Lucía Fernández", "lfernandez@mail.com", "Fonoaudiología Integrativa", "Lic. Javiera Morales", "15/09", "16:30 hrs", AppointmentModality.ONLINE_MEDILINK)
         )
@@ -63,7 +84,7 @@ object SanaesenciaRepository {
     // Ocupación de los 8 Boxes Presenciales en Los Vilos (Caupolicán 220)
     private val _boxes = MutableStateFlow(
         listOf(
-            BoxStatus(1, "Box 1 - Psicología", isOccupied = true, assignedSpecialty = "Psicología Infanto-Juvenil", currentPatient = "María González", nextSchedule = "Ocupado hasta 16:00 hrs"),
+            BoxStatus(1, "Box 1 - Psicología", isOccupied = true, assignedSpecialty = "Psicología Infanto-Juvenil", currentPatient = "Felipe Olguin", nextSchedule = "Ocupado hasta 16:00 hrs"),
             BoxStatus(2, "Box 2 - Terapia Ocupacional", isOccupied = true, assignedSpecialty = "Terapia Ocupacional", currentPatient = "Tomás Tapia", nextSchedule = "Ocupado hasta 12:00 hrs"),
             BoxStatus(3, "Box 3 - Fonoaudiología", isOccupied = false, assignedSpecialty = "Fonoaudiología Integrativa", currentPatient = null, nextSchedule = "Disponible desde 14:00 hrs"),
             BoxStatus(4, "Box 4 - Psicopedagogía", isOccupied = false, assignedSpecialty = "Psicopedagogía", currentPatient = null, nextSchedule = "Disponible todo el día"),
@@ -80,7 +101,7 @@ object SanaesenciaRepository {
         listOf(
             PatientContinuity("p101", "Felipe Morales", "felipe@mail.com", "Psicología Infanto-Juvenil", 2, 28, isAtRiskOfDesertion = true),
             PatientContinuity("p102", "Constanza Rivas", "crivas@mail.com", "Terapia Ocupacional", 1, 35, isAtRiskOfDesertion = true),
-            PatientContinuity("p103", "María González", "paciente@sanaescencia.cl", "Psicología Infanto-Juvenil", 5, 4, isAtRiskOfDesertion = false),
+            PatientContinuity("p103", "Felipe Olguin", "paciente@sanaescencia.cl", "Psicología Infanto-Juvenil", 5, 4, isAtRiskOfDesertion = false),
             PatientContinuity("p104", "Benjamín Soto", "bsoto@mail.com", "Psicopedagogía", 3, 12, isAtRiskOfDesertion = false)
         )
     )

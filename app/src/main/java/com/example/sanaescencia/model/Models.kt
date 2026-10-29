@@ -1,16 +1,24 @@
 package com.example.sanaescencia.model
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
+import java.io.ByteArrayOutputStream
+
 enum class RoleType(val displayName: String, val description: String) {
     PACIENTE("Cliente / Paciente", "Explora el catálogo de productos, terapias y agenda sus atenciones"),
-    ADMINISTRACION("Administrador del Centro", "Gestiona el catálogo, la ocupación de los 8 boxes y alertas de deserción")
+    ADMINISTRACION("Administrador", "Gestiona el catálogo, la ocupación de los 8 boxes y alertas de deserción")
 }
 
 data class AuthUser(
     val email: String,
     val passwordHash: String = "123456",
     val name: String,
+    val rut: String = "",
+    val phone: String = "",
     val role: RoleType,
-    val detail: String
+    val detail: String,
+    val profileImageUri: String = ""
 )
 
 data class Specialty(
@@ -99,3 +107,49 @@ data class PredictiveAlert(
     val alertType: AlertType,
     val isDismissed: Boolean = false
 )
+
+fun formatRut(rawInput: String): String {
+    val cleaned = rawInput.filter { it.isDigit() || it == 'k' || it == 'K' }
+    if (cleaned.isEmpty()) return ""
+
+    val trimmed = cleaned.take(9)
+    if (trimmed.length == 1) return trimmed.uppercase()
+
+    val body = trimmed.dropLast(1)
+    val dv = trimmed.last().uppercaseChar()
+    if (body.isEmpty()) return dv.toString()
+
+    val formattedBody = StringBuilder()
+    var count = 0
+    for (i in body.length - 1 downTo 0) {
+        formattedBody.append(body[i])
+        count++
+        if (count == 3 && i != 0) {
+            formattedBody.append('.')
+            count = 0
+        }
+    }
+
+    return "${formattedBody.reverse()}-$dv"
+}
+
+fun isValidEmail(email: String): Boolean {
+    val emailRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$".toRegex()
+    return email.trim().matches(emailRegex)
+}
+
+fun bitmapToBase64(bitmap: Bitmap): String {
+    val outputStream = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.PNG, 90, outputStream)
+    return Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)
+}
+
+fun base64ToBitmap(base64Str: String): Bitmap? {
+    return try {
+        if (base64Str.isBlank()) return null
+        val decodedBytes = Base64.decode(base64Str, Base64.DEFAULT)
+        BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+    } catch (e: Exception) {
+        null
+    }
+}
