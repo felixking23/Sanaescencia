@@ -20,6 +20,7 @@ import com.example.sanaescencia.view.components.TopRoleBar
 import com.example.sanaescencia.view.screens.*
 import com.example.sanaescencia.ui.theme.SanaescenciaTheme
 
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,7 +36,9 @@ class MainActivity : ComponentActivity() {
 enum class NavTarget(val title: String, val icon: ImageVector) {
     INICIO("Inicio", Icons.Default.Home),
     CATALOGO("Catálogo", Icons.Default.Storefront),
-    PERFIL("Perfil", Icons.Default.Person)
+    PERFIL("Perfil", Icons.Default.Person),
+
+    CARRITO("Carrito",Icons.Default.ShoppingCart)
 }
 
 @Composable
@@ -43,7 +46,11 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
     val currentUser by viewModel.currentUser.collectAsState()
     val loginError by viewModel.loginError.collectAsState()
 
+
+
     var currentScreen by remember { mutableStateOf(NavTarget.INICIO) }
+
+    var currentScreen2 by remember { mutableStateOf(NavTarget.CARRITO) }
 
     if (currentUser == null) {
         // Pantalla de Inicio de Sesión
@@ -105,7 +112,8 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                 when (currentScreen) {
                     NavTarget.INICIO -> HomeScreen(
                         currentUser = currentUser,
-                        onNavigateToCatalog = { currentScreen = NavTarget.CATALOGO }
+                        onNavigateToCatalog = { currentScreen = NavTarget.CATALOGO },
+                        onNavigateToCarrito = { currentScreen2 = NavTarget.CARRITO }
                     )
 
                     NavTarget.CATALOGO -> CatalogScreen()
@@ -123,8 +131,25 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                             viewModel.logout()
                         }
                     )
+
+                    NavTarget.CARRITO -> {
+                        CarritoScreen(
+                            currentUser = currentUser,
+                                currentScreen2 = when() {
+                                    RoleType.PACIENTE -> {
+                                        NavTarget.CARRITO
+                                    }
+                                    else -> {}
+                                } as NavTarget()
+                            }
+
+                    }
                 }
             }
         }
     }
 }
+
+
+
+

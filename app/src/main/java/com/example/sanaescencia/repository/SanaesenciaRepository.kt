@@ -23,6 +23,7 @@ object SanaesenciaRepository {
             role = RoleType.ADMINISTRACION,
             detail = "Gestión del Catálogo de Productos y 8 Boxes"
         )
+
     )
 
     // Catálogo de Especialidades Terapéuticas Reales

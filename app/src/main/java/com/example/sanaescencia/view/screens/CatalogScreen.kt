@@ -32,7 +32,10 @@ fun CatalogScreen() {
                 product.name.contains(searchQuery, ignoreCase = true) ||
                 product.description.contains(searchQuery, ignoreCase = true)
         matchesType && matchesSearch
+
+
     }
+
 
     Column(
         modifier = Modifier
