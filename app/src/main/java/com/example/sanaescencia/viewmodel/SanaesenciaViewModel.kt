@@ -9,14 +9,15 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class SanaesenciaViewModel : ViewModel() {
 
-    // Usuario Actualmente Autenticado
-    private val _currentUser = MutableStateFlow<AuthUser?>(SanaesenciaRepository.demoUsers[0])
+    // Usuario Actualmente Autenticado (null por defecto para mostrar Login al iniciar)
+    private val _currentUser = MutableStateFlow<AuthUser?>(null)
     val currentUser: StateFlow<AuthUser?> = _currentUser.asStateFlow()
 
     private val _loginError = MutableStateFlow<String?>(null)
     val loginError: StateFlow<String?> = _loginError.asStateFlow()
 
     // Datos del Repositorio
+    val users: StateFlow<List<AuthUser>> = SanaesenciaRepository.users
     val appointments: StateFlow<List<Appointment>> = SanaesenciaRepository.appointments
     val boxes: StateFlow<List<BoxStatus>> = SanaesenciaRepository.boxes
     val patientContinuityList: StateFlow<List<PatientContinuity>> = SanaesenciaRepository.patientContinuityList
@@ -24,7 +25,7 @@ class SanaesenciaViewModel : ViewModel() {
 
     // Inicio de Sesión por Credenciales
     fun login(emailInput: String, passwordInput: String): Boolean {
-        val user = SanaesenciaRepository.demoUsers.find {
+        val user = SanaesenciaRepository.users.value.find {
             it.email.equals(emailInput.trim(), ignoreCase = true) && it.passwordHash == passwordInput.trim()
         }
         return if (user != null) {
@@ -32,9 +33,79 @@ class SanaesenciaViewModel : ViewModel() {
             _loginError.value = null
             true
         } else {
-            _loginError.value = "Credenciales incorrectas. Prueba con los accesos directos de demo."
+            _loginError.value = "Credenciales incorrectas. Prueba con los accesos directos de demo o crea una cuenta."
             false
         }
+    }
+
+    // Registro de Nuevo Cliente
+    fun registerPatient(name: String, rut: String, email: String, phone: String, passwordInput: String): Boolean {
+        val existingUser = SanaesenciaRepository.users.value.find {
+            it.email.equals(email.trim(), ignoreCase = true)
+        }
+        if (existingUser != null) {
+            _loginError.value = "Ya existe una cuenta con este correo electrónico."
+            return false
+        }
+
+        val newUser = AuthUser(
+            email = email.trim(),
+            passwordHash = passwordInput.trim(),
+            name = name.trim(),
+            rut = rut.trim(),
+            phone = phone.trim(),
+            role = RoleType.PACIENTE,
+            detail = "Cliente Registrado"
+        )
+        SanaesenciaRepository.addUser(newUser)
+        _currentUser.value = newUser
+        _loginError.value = null
+        return true
+    }
+
+    fun deleteUser(user: AuthUser) {
+        SanaesenciaRepository.deleteUser(user)
+    }
+
+    fun createUserByAdmin(name: String, rut: String, email: String, phone: String, passwordInput: String, role: RoleType): Boolean {
+        val existingUser = SanaesenciaRepository.users.value.find {
+            it.email.equals(email.trim(), ignoreCase = true)
+        }
+        if (existingUser != null) {
+            return false
+        }
+        val newUser = AuthUser(
+            email = email.trim(),
+            passwordHash = passwordInput.trim(),
+            name = name.trim(),
+            rut = rut.trim(),
+            phone = phone.trim(),
+            role = role,
+            detail = if (role == RoleType.PACIENTE) "Cliente Registrado por Admin" else "Administrador del Centro"
+        )
+        SanaesenciaRepository.addUser(newUser)
+        return true
+    }
+
+    fun updateUser(originalEmail: String, name: String, rut: String, email: String, phone: String, passwordInput: String, role: RoleType, profileImageUri: String = ""): Boolean {
+        val existingUser = SanaesenciaRepository.users.value.find { it.email.equals(originalEmail, ignoreCase = true) }
+        val imageToUse = if (profileImageUri.isNotBlank()) profileImageUri else (existingUser?.profileImageUri ?: "")
+
+        val updatedUser = AuthUser(
+            email = email.trim(),
+            passwordHash = passwordInput.trim(),
+            name = name.trim(),
+            rut = rut.trim(),
+            phone = phone.trim(),
+            role = role,
+            detail = if (role == RoleType.PACIENTE) "Cliente Actualizado" else "Administrador del Centro",
+            profileImageUri = imageToUse
+        )
+        SanaesenciaRepository.updateUser(originalEmail, updatedUser)
+        if (_currentUser.value?.email.equals(originalEmail, ignoreCase = true) || _currentUser.value?.email.equals(email, ignoreCase = true)) {
+            _currentUser.value = updatedUser
+        }
+        return true
     }
 
     // Acceso Rápido por Rol
@@ -85,5 +156,74 @@ class SanaesenciaViewModel : ViewModel() {
 
     fun dismissAlert(alertId: String) {
         SanaesenciaRepository.dismissAlert(alertId)
+    }
+
+    val cartItems: StateFlow<Map<String, Int>> = SanaesenciaRepository.cartItems
+    val specialties: StateFlow<List<Specialty>> = SanaesenciaRepository.specialties
+    val products: StateFlow<List<NaturalProduct>> = SanaesenciaRepository.products
+
+    // Compatibilidad para referencias existentes
+    val availableSpecialties = specialties
+    val availableProducts = products
+
+    fun addToCart(itemId: String) {
+        SanaesenciaRepository.addItemToCart(itemId)
+    }
+
+    fun removeFromCart(itemId: String) {
+        SanaesenciaRepository.removeItemFromCart(itemId)
+    }
+
+    fun clearCart() {
+        SanaesenciaRepository.clearCart()
+    }
+
+    fun getCartTotal(): Int {
+        var total = 0
+        cartItems.value.forEach { (id, qty) ->
+            val specialtyPrice = specialties.value.find { it.id == id }?.price
+            val productPrice = products.value.find { it.id == id }?.price
+            total += ((specialtyPrice ?: productPrice ?: 0) * qty)
+        }
+        return total
+    }
+
+    fun addProduct(name: String, type: ProductType, price: Int, description: String, volume: String) {
+        val prod = NaturalProduct(
+            id = "prod_${System.currentTimeMillis()}",
+            name = name,
+            type = type,
+            price = price,
+            description = description,
+            volume = volume
+        )
+        SanaesenciaRepository.addProduct(prod)
+    }
+
+    fun updateProduct(product: NaturalProduct) {
+        SanaesenciaRepository.updateProduct(product)
+    }
+
+    fun deleteProduct(productId: String) {
+        SanaesenciaRepository.deleteProduct(productId)
+    }
+
+    fun addSpecialty(name: String, professional: String, description: String, price: Int) {
+        val spec = Specialty(
+            id = "spec_${System.currentTimeMillis()}",
+            name = name,
+            professional = professional,
+            description = description,
+            price = price
+        )
+        SanaesenciaRepository.addSpecialty(spec)
+    }
+
+    fun updateSpecialty(specialty: Specialty) {
+        SanaesenciaRepository.updateSpecialty(specialty)
+    }
+
+    fun deleteSpecialty(specialtyId: String) {
+        SanaesenciaRepository.deleteSpecialty(specialtyId)
     }
 }

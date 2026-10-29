@@ -1,10 +1,11 @@
 package com.example.sanaescencia.view.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -12,21 +13,24 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.sanaescencia.R
 import com.example.sanaescencia.model.RoleType
 
 @Composable
 fun LoginScreen(
     onLoginClick: (String, String) -> Boolean,
     onQuickLogin: (RoleType) -> Unit,
+    onNavigateToRegister: () -> Unit,
     errorMessage: String?
 ) {
     var email by remember { mutableStateOf("") }
@@ -42,21 +46,15 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Logo / Icono del Centro Integrativo
-        Box(
+        // Logo de la marca Sanaesencia desde la imagen oficial (.webp)
+        Image(
+            painter = painterResource(id = R.drawable.logo_sanaesencia),
+            contentDescription = "Logo Sanaesencia",
             modifier = Modifier
-                .size(90.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Spa,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(54.dp)
-            )
-        }
+                .height(70.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -98,11 +96,13 @@ fun LoginScreen(
 
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = { email = it.filterNot { c -> c.isWhitespace() } },
                     label = { Text("Correo Electrónico") },
                     leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -122,7 +122,8 @@ fun LoginScreen(
                     },
                     visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
                 )
 
                 errorMessage?.let { error ->
@@ -146,7 +147,34 @@ fun LoginScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Bloque de Registro para Clientes
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "¿Aún no tienes una cuenta?",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.DarkGray
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            TextButton(
+                onClick = onNavigateToRegister,
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Text(
+                    text = "Crear una cuenta",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Tarjeta de Perfiles de Prueba / Demo Acceso Rápido
         Card(
@@ -187,11 +215,11 @@ fun LoginScreen(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp))
 
-                // Demo Cliente / Paciente
+                // Demo Cliente
                 DemoUserItem(
-                    title = "Cliente / Paciente",
+                    title = "Cliente",
                     email = "paciente@sanaescencia.cl",
-                    roleName = "María González",
+                    roleName = "Felipe Olguin",
                     icon = Icons.Default.Person,
                     onClick = {
                         email = "paciente@sanaescencia.cl"
@@ -204,9 +232,9 @@ fun LoginScreen(
 
                 // Demo Administrador
                 DemoUserItem(
-                    title = "Administrador del Centro",
+                    title = "Administrador",
                     email = "admin@sanaescencia.cl",
-                    roleName = "Administración (8 Boxes)",
+                    roleName = "Administración",
                     icon = Icons.Default.AdminPanelSettings,
                     onClick = {
                         email = "admin@sanaescencia.cl"

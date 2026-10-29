@@ -7,54 +7,81 @@ import kotlinx.coroutines.flow.asStateFlow
 
 object SanaesenciaRepository {
 
-    // --- Credenciales de Demostración para Inicio de Sesión ---
+    // --- Credenciales de Demostración y Usuarios del Sistema ---
     val demoUsers = listOf(
-        AuthUser(
-            email = "paciente@sanaescencia.cl",
-            passwordHash = "123456",
-            name = "María González",
-            role = RoleType.PACIENTE,
-            detail = "Cliente / Paciente Activo"
-        ),
         AuthUser(
             email = "admin@sanaescencia.cl",
             passwordHash = "123456",
-            name = "Administración Los Vilos",
+            name = "Admin Jefe",
+            rut = "15.820.491-3",
+            phone = "+56 9 1234 5678",
             role = RoleType.ADMINISTRACION,
             detail = "Gestión del Catálogo de Productos y 8 Boxes"
+        ),
+        AuthUser(
+            email = "paciente@sanaescencia.cl",
+            passwordHash = "123456",
+            name = "Felipe Olguin",
+            rut = "18.452.193-K",
+            phone = "+56 9 8765 4321",
+            role = RoleType.PACIENTE,
+            detail = "Cliente / Paciente Activo"
         )
 
     )
 
+    private val _users = MutableStateFlow(demoUsers)
+    val users: StateFlow<List<AuthUser>> = _users.asStateFlow()
+
+    fun addUser(user: AuthUser) {
+        _users.value = _users.value + user
+    }
+
+    fun deleteUser(user: AuthUser) {
+        _users.value = _users.value.filter { it.email != user.email }
+    }
+
+    fun updateUser(originalEmail: String, updatedUser: AuthUser) {
+        _users.value = _users.value.map {
+            if (it.email.equals(originalEmail, ignoreCase = true)) updatedUser else it
+        }
+    }
+
     // Catálogo de Especialidades Terapéuticas Reales
-    val specialties = listOf(
-        Specialty("1", "Psicología Infanto-Juvenil", "Dra. Camila Soto", "Atención psicológica integral para niños, adolescentes y orientación familiar.", 35000),
-        Specialty("2", "Terapia Ocupacional", "Lic. Roberto Silva", "Evaluación e intervención del desarrollo psicomotor y habilidades de la vida diaria.", 32000),
-        Specialty("3", "Fonoaudiología Integrativa", "Lic. Javiera Morales", "Diagnóstico y terapia del lenguaje, habla, voz y deglución.", 30000),
-        Specialty("4", "Psicopedagogía Clínica", "Lic. Andrea Castro", "Apoyo en dificultades de aprendizaje, hábitos de estudio y neurodiversidad.", 28000),
-        Specialty("5", "Nutrición Integrativa", "Dra. Valentina Palma", "Planes nutricionales enfocados en salud emocional y bienestar digestivo.", 25000),
-        Specialty("6", "Matrona y Salud Femenina", "Lic. Sofía Riquelme", "Acompañamiento en etapas de la mujer, salud sexual y reproductiva.", 27000),
-        Specialty("7", "Quiropraxia y Postura", "Dr. Matías Vera", "Alineación neuromuscular y alivio de dolor corporal.", 30000),
-        Specialty("8", "Masajes Terapéuticos", "Kine. Daniel López", "Masajes descontracturantes y relajación corporal en box equipado.", 25000),
-        Specialty("9", "Evaluación del Neurodesarrollo", "Equipo Multidisciplinario", "Evaluación completa para diagnósticos de desarrollo e inclusión escolar.", 60000),
-        Specialty("10", "Terapia Floral Bach", "Esp. Patricia Araya", "Esencias florales personalizadas para la gestión de ansiedad y emociones.", 20000),
-        Specialty("11", "Aromaterapia Integrativa", "Esp. Marcela Godoy", "Uso clínico de aceites esenciales puros para apoyo emocional.", 22000)
+    private val _specialties = MutableStateFlow(
+        listOf(
+            Specialty("1", "Psicología Infanto-Juvenil", "Dra. Camila Soto", "Atención psicológica integral para niños, adolescentes y orientación familiar.", 35000),
+            Specialty("2", "Terapia Ocupacional", "Lic. Roberto Silva", "Evaluación e intervención del desarrollo psicomotor y habilidades de la vida diaria.", 32000),
+            Specialty("3", "Fonoaudiología Integrativa", "Lic. Javiera Morales", "Diagnóstico y terapia del lenguaje, habla, voz y deglución.", 30000),
+            Specialty("4", "Psicopedagogía Clínica", "Lic. Andrea Castro", "Apoyo en dificultades de aprendizaje, hábitos de estudio y neurodiversidad.", 28000),
+            Specialty("5", "Nutrición Integrativa", "Dra. Valentina Palma", "Planes nutricionales enfocados en salud emocional y bienestar digestivo.", 25000),
+            Specialty("6", "Matrona y Salud Femenina", "Lic. Sofía Riquelme", "Acompañamiento en etapas de la mujer, salud sexual y reproductiva.", 27000),
+            Specialty("7", "Quiropraxia y Postura", "Dr. Matías Vera", "Alineación neuromuscular y alivio de dolor corporal.", 30000),
+            Specialty("8", "Masajes Terapéuticos", "Kine. Daniel López", "Masajes descontracturantes y relajación corporal en box equipado.", 25000),
+            Specialty("9", "Evaluación del Neurodesarrollo", "Equipo Multidisciplinario", "Evaluación completa para diagnósticos de desarrollo e inclusión escolar.", 60000),
+            Specialty("10", "Terapia Floral Bach", "Esp. Patricia Araya", "Esencias florales personalizadas para la gestión de ansiedad y emociones.", 20000),
+            Specialty("11", "Aromaterapia Integrativa", "Esp. Marcela Godoy", "Uso clínico de aceites esenciales puros para apoyo emocional.", 22000)
+        )
     )
+    val specialties: StateFlow<List<Specialty>> = _specialties.asStateFlow()
 
     // Catálogo de Productos Naturales Sanaesencia
-    val products = listOf(
-        NaturalProduct("p1", "Kit Bienestar Infantil", ProductType.KIT, 24990, "Incluye Roll-on Calma + Bruma Sueño + Guía de uso consciente.", "Pack de 2 productos"),
-        NaturalProduct("p2", "Kit Armonía Familiar", ProductType.KIT, 29990, "Línea completa de aromaterapia para espacios y manejo del estrés.", "Pack de 3 productos"),
-        NaturalProduct("p3", "Roll-on Calma Infanto-Juvenil", ProductType.ROLL_ON, 8990, "Mezcla de lavanda y manzanilla para reducir estados de ansiedad.", "10 ml"),
-        NaturalProduct("p4", "Roll-on Enfoque y Concentración", ProductType.ROLL_ON, 8990, "Con menta y romero para potenciar la atención en sesiones de estudio.", "10 ml"),
-        NaturalProduct("p5", "Bruma Sueño Profundo", ProductType.BRUMA, 10990, "Spray ambiental con bergamota y lavanda para favorecer el descanso nocturno.", "100 ml"),
-        NaturalProduct("p6", "Bruma Energizante Cítrica", ProductType.BRUMA, 10990, "Aroma tonificante para empezar la jornada con ánimo positivo.", "100 ml")
+    private val _products = MutableStateFlow(
+        listOf(
+            NaturalProduct("p1", "Kit Bienestar Infantil", ProductType.KIT, 24990, "Incluye Roll-on Calma + Bruma Sueño + Guía de uso consciente.", "Pack de 2 productos"),
+            NaturalProduct("p2", "Kit Armonía Familiar", ProductType.KIT, 29990, "Línea completa de aromaterapia para espacios y manejo del estrés.", "Pack de 3 productos"),
+            NaturalProduct("p3", "Roll-on Calma Infanto-Juvenil", ProductType.ROLL_ON, 8990, "Mezcla de lavanda y manzanilla para reducir estados de ansiedad.", "10 ml"),
+            NaturalProduct("p4", "Roll-on Enfoque y Concentración", ProductType.ROLL_ON, 8990, "Con menta y romero para potenciar la atención en sesiones de estudio.", "10 ml"),
+            NaturalProduct("p5", "Bruma Sueño Profundo", ProductType.BRUMA, 10990, "Spray ambiental con bergamota y lavanda para favorecer el descanso nocturno.", "100 ml"),
+            NaturalProduct("p6", "Bruma Energizante Cítrica", ProductType.BRUMA, 10990, "Aroma tonificante para empezar la jornada con ánimo positivo.", "100 ml")
+        )
     )
+    val products: StateFlow<List<NaturalProduct>> = _products.asStateFlow()
 
     // Estado en Vivo de Citas
     private val _appointments = MutableStateFlow(
         listOf(
-            Appointment("a1", "María González", "paciente@sanaescencia.cl", "Psicología Infanto-Juvenil", "Dra. Camila Soto", "Hoy", "15:00 hrs", AppointmentModality.PRESENCIA_LOS_VILOS, boxNumber = 1),
+            Appointment("a1", "Felipe Olguin", "paciente@sanaescencia.cl", "Psicología Infanto-Juvenil", "Dra. Camila Soto", "Hoy", "15:00 hrs", AppointmentModality.PRESENCIA_LOS_VILOS, boxNumber = 1),
             Appointment("a2", "Tomás Tapia", "ttapia@mail.com", "Terapia Ocupacional", "Lic. Roberto Silva", "Mañana", "11:00 hrs", AppointmentModality.PRESENCIA_LOS_VILOS, boxNumber = 2),
             Appointment("a3", "Lucía Fernández", "lfernandez@mail.com", "Fonoaudiología Integrativa", "Lic. Javiera Morales", "15/09", "16:30 hrs", AppointmentModality.ONLINE_MEDILINK)
         )
@@ -64,7 +91,7 @@ object SanaesenciaRepository {
     // Ocupación de los 8 Boxes Presenciales en Los Vilos (Caupolicán 220)
     private val _boxes = MutableStateFlow(
         listOf(
-            BoxStatus(1, "Box 1 - Psicología", isOccupied = true, assignedSpecialty = "Psicología Infanto-Juvenil", currentPatient = "María González", nextSchedule = "Ocupado hasta 16:00 hrs"),
+            BoxStatus(1, "Box 1 - Psicología", isOccupied = true, assignedSpecialty = "Psicología Infanto-Juvenil", currentPatient = "Felipe Olguin", nextSchedule = "Ocupado hasta 16:00 hrs"),
             BoxStatus(2, "Box 2 - Terapia Ocupacional", isOccupied = true, assignedSpecialty = "Terapia Ocupacional", currentPatient = "Tomás Tapia", nextSchedule = "Ocupado hasta 12:00 hrs"),
             BoxStatus(3, "Box 3 - Fonoaudiología", isOccupied = false, assignedSpecialty = "Fonoaudiología Integrativa", currentPatient = null, nextSchedule = "Disponible desde 14:00 hrs"),
             BoxStatus(4, "Box 4 - Psicopedagogía", isOccupied = false, assignedSpecialty = "Psicopedagogía", currentPatient = null, nextSchedule = "Disponible todo el día"),
@@ -81,7 +108,7 @@ object SanaesenciaRepository {
         listOf(
             PatientContinuity("p101", "Felipe Morales", "felipe@mail.com", "Psicología Infanto-Juvenil", 2, 28, isAtRiskOfDesertion = true),
             PatientContinuity("p102", "Constanza Rivas", "crivas@mail.com", "Terapia Ocupacional", 1, 35, isAtRiskOfDesertion = true),
-            PatientContinuity("p103", "María González", "paciente@sanaescencia.cl", "Psicología Infanto-Juvenil", 5, 4, isAtRiskOfDesertion = false),
+            PatientContinuity("p103", "Felipe Olguin", "paciente@sanaescencia.cl", "Psicología Infanto-Juvenil", 5, 4, isAtRiskOfDesertion = false),
             PatientContinuity("p104", "Benjamín Soto", "bsoto@mail.com", "Psicopedagogía", 3, 12, isAtRiskOfDesertion = false)
         )
     )
@@ -140,5 +167,59 @@ object SanaesenciaRepository {
 
     fun dismissAlert(alertId: String) {
         _predictiveAlerts.value = _predictiveAlerts.value.filter { it.id != alertId }
+    }
+
+    private val _cartItems = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val cartItems: StateFlow<Map<String, Int>> = _cartItems.asStateFlow()
+
+    fun addItemToCart(itemId: String) {
+        val currentMap = _cartItems.value.toMutableMap()
+        currentMap[itemId] = (currentMap[itemId] ?: 0) + 1
+        _cartItems.value = currentMap
+    }
+
+    fun removeItemFromCart(itemId: String) {
+        val currentMap = _cartItems.value.toMutableMap()
+        val currentQty = currentMap[itemId] ?: 0
+        if (currentQty > 1) {
+            currentMap[itemId] = currentQty - 1
+        } else {
+            currentMap.remove(itemId)
+        }
+        _cartItems.value = currentMap
+    }
+
+    fun clearCart() {
+        _cartItems.value = emptyMap()
+    }
+
+    fun addProduct(product: NaturalProduct) {
+        val current = _products.value.toMutableList()
+        current.add(product)
+        _products.value = current
+    }
+
+    fun updateProduct(product: NaturalProduct) {
+        val current = _products.value.map { if (it.id == product.id) product else it }
+        _products.value = current
+    }
+
+    fun deleteProduct(productId: String) {
+        _products.value = _products.value.filter { it.id != productId }
+    }
+
+    fun addSpecialty(specialty: Specialty) {
+        val current = _specialties.value.toMutableList()
+        current.add(specialty)
+        _specialties.value = current
+    }
+
+    fun updateSpecialty(specialty: Specialty) {
+        val current = _specialties.value.map { if (it.id == specialty.id) specialty else it }
+        _specialties.value = current
+    }
+
+    fun deleteSpecialty(specialtyId: String) {
+        _specialties.value = _specialties.value.filter { it.id != specialtyId }
     }
 }
