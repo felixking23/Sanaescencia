@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.sanaescencia.model.AuthUser
 import com.example.sanaescencia.model.RoleType
 import com.example.sanaescencia.viewmodel.SanaesenciaViewModel
 import com.example.sanaescencia.view.components.TopRoleBar
@@ -39,7 +40,8 @@ enum class NavTarget(val title: String, val icon: ImageVector) {
     USUARIOS("Usuarios", Icons.Default.Group),
     PERFIL("Perfil", Icons.Default.Person),
 
-    CARRITO("Carrito",Icons.Default.ShoppingCart)
+    CARRITO("Carrito",Icons.Default.ShoppingCart);
+
 }
 
 @Composable
@@ -197,23 +199,15 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                         onEditingProfileChanged = { isEditingOwnProfile = it }
                     )
 
-                    NavTarget.CARRITO -> {
-                        CarritoScreen(
-                            currentUser = currentUser,
-                                currentScreen2 = when() {
-                                    RoleType.PACIENTE -> {
-                                        NavTarget.CARRITO
-                                    }
-                                    else -> {}
-                                } as NavTarget()
-                            }
+                    NavTarget.CARRITO -> CarritoScreen(
+
+                    )
+                }
 
                     }
                 }
             }
         }
-    }
-}
 
 
 

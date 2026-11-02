@@ -122,13 +122,7 @@ fun TopRoleBar(
     )
 }
 
-@Composable
-fun comp(
-    currentUser: AuthUser?
 
-){
-
-}
 @Composable
 fun GpsLocationCard(
     modifier: Modifier = Modifier
