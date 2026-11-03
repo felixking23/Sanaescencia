@@ -226,4 +226,6 @@ class SanaesenciaViewModel : ViewModel() {
     fun deleteSpecialty(specialtyId: String) {
         SanaesenciaRepository.deleteSpecialty(specialtyId)
     }
+
+
 }

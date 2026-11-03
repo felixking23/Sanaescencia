@@ -70,7 +70,8 @@ fun HomeScreen(
             onClick = onNavigateToCarrito,
             modifier= Modifier
                 .fillMaxWidth()
-                .height(54.dp)
+                .height(54.dp),
+            shape = RoundedCornerShape(12.dp)
 
         ) {
             Icon(Icons.Default.ShoppingCart, contentDescription = null)

@@ -34,7 +34,7 @@ fun CarritoScreen(viewModel: SanaesenciaViewModel = viewModel()) {
     val currentUser: AuthUser? by viewModel.currentUser.collectAsState() // Aquí deberías obtener el usuario actual desde tu ViewModel o estado global
     val user : Boolean = currentUser?.role == RoleType.PACIENTE;// Aquí deberías obtener el usuario actual desde tu ViewModel o estado global
     val currentScreen2: NavTarget = NavTarget.CARRITO // Aquí deberías obtener
-
+    val cartItems: Map<String, Int> = emptyMap() // Aquí deberías obtener la lista de productos en el carrito desde tu ViewModel o estado global
     var searchQuery by remember { mutableStateOf("") } // Aquí deberías obtener la consulta de búsqueda desde tu ViewModel o estado global
 
     var filteredProducts by remember { mutableStateOf(emptyList<Any>()) } // Aquí deberías obtener la lista de productos filtrados desde tu ViewModel o estado global
@@ -73,16 +73,9 @@ fun CarritoScreen(viewModel: SanaesenciaViewModel = viewModel()) {
                                     .padding(horizontal = 16.dp, vertical = 10.dp)
                             ) {
                                 items(filteredProducts) { product ->
-                                ProfileInfoRow(
 
-                                )
                                 // Aquí puedes mostrar cada producto en el carrito, por ejemplo, usando un Card o Row.
                                     // Asegúrate de personalizar la visualización según tus necesidades.
-                                }
-                                Button({
-
-                                }) {
-                                    Text("Finalizar Compra")
                                 }
                                 // Aquí puedes agregar los elementos del carrito de compras
                                 // Por ejemplo, puedes usar items() para iterar sobre la lista de productos en el carrito

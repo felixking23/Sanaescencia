@@ -39,7 +39,6 @@ enum class NavTarget(val title: String, val icon: ImageVector) {
     CATALOGO("Catálogo", Icons.Default.Storefront),
     USUARIOS("Usuarios", Icons.Default.Group),
     PERFIL("Perfil", Icons.Default.Person),
-
     CARRITO("Carrito",Icons.Default.ShoppingCart);
 
 }
@@ -49,8 +48,6 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
     val currentUser by viewModel.currentUser.collectAsState()
     val loginError by viewModel.loginError.collectAsState()
     val users by viewModel.users.collectAsState()
-
-
 
     var currentScreen by remember { mutableStateOf(NavTarget.INICIO) }
     var isCreatingUserAdmin by remember { mutableStateOf(false) }
@@ -106,6 +103,7 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                         currentScreen = when (role) {
                             RoleType.PACIENTE -> NavTarget.INICIO
                             RoleType.ADMINISTRACION -> NavTarget.PERFIL
+
                         }
                     },
                     onLogout = {
@@ -122,7 +120,7 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                     NavigationBar {
                         val userRole = currentUser?.role ?: RoleType.PACIENTE
                         val availableTabs = when (userRole) {
-                            RoleType.PACIENTE -> listOf(NavTarget.INICIO, NavTarget.CATALOGO, NavTarget.PERFIL)
+                            RoleType.PACIENTE -> listOf(NavTarget.INICIO, NavTarget.CATALOGO, NavTarget.PERFIL, NavTarget.CARRITO)
                             RoleType.ADMINISTRACION -> listOf(NavTarget.INICIO, NavTarget.CATALOGO, NavTarget.USUARIOS, NavTarget.PERFIL)
                         }
 
@@ -137,6 +135,9 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                                     }
                                     if (tab != NavTarget.PERFIL) {
                                         isEditingOwnProfile = false
+                                    }
+                                    if (tab != NavTarget.CARRITO){
+
                                     }
                                 },
                                 icon = { Icon(tab.icon, contentDescription = tab.title) },
@@ -196,12 +197,11 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                             viewModel.updateUser(originalEmail, name, rut, email, phone, password, role, imageUri)
                         },
                         isEditingProfile = isEditingOwnProfile,
-                        onEditingProfileChanged = { isEditingOwnProfile = it }
-                    )
-
-                    NavTarget.CARRITO -> CarritoScreen(
+                        onEditingProfileChanged = { isEditingOwnProfile = it },
 
                     )
+
+                    NavTarget.CARRITO -> CarritoScreen()
                 }
 
                     }
