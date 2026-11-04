@@ -25,8 +25,8 @@ fun BookingScreen(
     boxes: List<BoxStatus>,
     onBookSuccess: (Specialty, String, String, AppointmentModality, Int?) -> Unit
 ) {
-    val specialties = SanaesenciaRepository.specialties
-    var selectedSpecialty by remember { mutableStateOf(preselectedSpecialty ?: specialties[0]) }
+    val specialties by SanaesenciaRepository.specialties.collectAsState()
+    var selectedSpecialty by remember { mutableStateOf(preselectedSpecialty ?: specialties.firstOrNull() ?: Specialty("1", "Psicología", "Dra. Soto", "", 35000)) }
     var selectedModality by remember { mutableStateOf(AppointmentModality.PRESENCIA_LOS_VILOS) }
     var selectedBoxNumber by remember { mutableStateOf(1) }
     var selectedDate by remember { mutableStateOf("Hoy") }
