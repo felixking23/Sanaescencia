@@ -40,6 +40,8 @@ fun CatalogScreen(viewModel: SanaesenciaViewModel = viewModel()) {
     var showCheckoutDialog by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
 
+    var addCarrito by remember { mutableStateOf("") }
+
     var showAddDialog by remember { mutableStateOf(false) }
     var editingSpecialty by remember { mutableStateOf<Specialty?>(null) }
     var editingProduct by remember { mutableStateOf<NaturalProduct?>(null) }
@@ -210,11 +212,18 @@ fun CatalogScreen(viewModel: SanaesenciaViewModel = viewModel()) {
                     Spacer(modifier = Modifier.height(10.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         TextButton(onClick = { viewModel.clearCart(); showCartSummary = false }) { Text("Vaciar") }
+                        TextButton(
+                            onClick = { viewModel.addToCart(addCarrito); showCartSummary = false },
+                            enabled = cartItems.isNotEmpty() ,
+                            content = { Text("Guardar") }
+                        )
                         Button(onClick = { showCartSummary = false; showCheckoutDialog = true }) { Text("Pagar con Tarjeta") }
                     }
                 }
             }
         }
+
+
 
         if (showCheckoutDialog) {
             var cardNumber by remember { mutableStateOf("") }
@@ -222,6 +231,8 @@ fun CatalogScreen(viewModel: SanaesenciaViewModel = viewModel()) {
             var cardCvv by remember { mutableStateOf("") }
             var cardName by remember { mutableStateOf("") }
             var errorMessage by remember { mutableStateOf<String?>(null) }
+
+
 
             AlertDialog(
                 onDismissRequest = { showCheckoutDialog = false },
@@ -503,3 +514,5 @@ fun CatalogScreen(viewModel: SanaesenciaViewModel = viewModel()) {
         }
     }
 }
+
+

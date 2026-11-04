@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.sanaescencia.model.AuthUser
 import com.example.sanaescencia.model.RoleType
 import com.example.sanaescencia.viewmodel.SanaesenciaViewModel
 import com.example.sanaescencia.view.components.TopRoleBar
@@ -55,6 +54,7 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
     var isEditingOwnProfile by remember { mutableStateOf(false) }
 
     var currentScreen2 by remember { mutableStateOf(NavTarget.CARRITO) }
+    var estaAlmacenando by remember { mutableStateOf(false) }
 
     if (currentUser == null) {
         var isRegistering by remember { mutableStateOf(false) }
@@ -137,7 +137,7 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
                                         isEditingOwnProfile = false
                                     }
                                     if (tab != NavTarget.CARRITO){
-
+                                        estaAlmacenando = false
                                     }
                                 },
                                 icon = { Icon(tab.icon, contentDescription = tab.title) },
@@ -201,13 +201,18 @@ fun SanaesenciaApp(viewModel: SanaesenciaViewModel = viewModel()) {
 
                     )
 
-                    NavTarget.CARRITO -> CarritoScreen()
+                    NavTarget.CARRITO -> CarritoScreen(
+                        viewModel = viewModel,
+                        isNotEmpty = { value.isNotEmpty() }
+                    )
                 }
 
                     }
                 }
             }
         }
+
+
 
 
 

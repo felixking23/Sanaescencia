@@ -162,17 +162,21 @@ class SanaesenciaViewModel : ViewModel() {
     val specialties: StateFlow<List<Specialty>> = SanaesenciaRepository.specialties
     val products: StateFlow<List<NaturalProduct>> = SanaesenciaRepository.products
 
+
+
     // Compatibilidad para referencias existentes
     val availableSpecialties = specialties
     val availableProducts = products
 
     fun addToCart(itemId: String) {
         SanaesenciaRepository.addItemToCart(itemId)
+
     }
 
     fun removeFromCart(itemId: String) {
         SanaesenciaRepository.removeItemFromCart(itemId)
     }
+
 
     fun clearCart() {
         SanaesenciaRepository.clearCart()
@@ -228,4 +232,9 @@ class SanaesenciaViewModel : ViewModel() {
     }
 
 
+
 }
+
+
+
+

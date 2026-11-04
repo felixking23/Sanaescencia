@@ -103,6 +103,7 @@ object SanaesenciaRepository {
     )
     val boxes: StateFlow<List<BoxStatus>> = _boxes.asStateFlow()
 
+
     // Trazabilidad de Pacientes y Alertas de Deserción
     private val _patientContinuityList = MutableStateFlow(
         listOf(
@@ -199,6 +200,10 @@ object SanaesenciaRepository {
         _products.value = current
     }
 
+    fun addToCart(itemId: String){
+        val currentMap = _cartItems.value.toMutableMap()
+
+    }
     fun updateProduct(product: NaturalProduct) {
         val current = _products.value.map { if (it.id == product.id) product else it }
         _products.value = current
